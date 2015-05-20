@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Cyber Festival</title>
+		<link rel="stylesheet" href="index.css" />
+</head>
+	<body>
+		<header>
+		</header>
+		<div id="aside">
+			<div id="aside-column">
+				<div id="content-aside">
+				</div>
+				<div id="content-aside">
+				</div>
+			</div>
+		</div>
+		<div id="section">
+			<div id="section-column">
+				<div id="post-section">
+				</div>
+				<div id="content-section">
+				</div>
+				<div id="content-section">
+				</div>
+			</div>
+		</div>
+		<div id="aside">
+			<div id="aside-column-r">
+				<div id="content-aside-r">
+				</div>
+			</div>
+		</div>
+		<footer>
+		</footer>
+	</body>
+</html>
