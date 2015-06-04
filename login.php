@@ -76,6 +76,26 @@
 
 
 	</script>
+	<style>
+		.formCampo {
+			float: left; 
+			width: 30%; 
+			height: 50px; 
+			font-family: cursive; 
+			font-size: 25px; 
+			color: rgba(100, 130, 255, 0.7); 
+			font-weight: 900;
+			line-height: 50px;
+			text-shadow: 0 0 0.05em #333, 0 0 0.05em #333;
+			margin-bottom: 10px;
+		}
+		.formInput {
+			float: right;
+			margin-bottom: 10px;
+			width: 70%; 
+			text-align: right;
+		}
+	</style>
 </head>
 	<body onload="chamaTrocaBackground(); preloader(); preloader1(); preloader2();">
 		<header>
@@ -91,11 +111,12 @@
 					<div id="register-content">
 						<div id="register-form">
 							<form action="cadastrar.php" method="POST">
-								<div style="float: left; width: 30%; height: 50px; font-family: cursive; font-size: 25px; color: rgba(100, 130, 255, 0.7); font-weight: 900; line-height: 50px; margin-bottom: 10px; text-shadow: 0 0 0.05em #333, 0 0 0.05em #333;">Nome artístico:</div><div style="float: right; margin-bottom: 10px; width: 70%; text-align: right;"><input type="text" placeholder="Zé da Viola..."></div>
-								<div style="float: left; width: 30%; height: 50px; font-family: cursive; font-size: 25px; color: rgba(100, 130, 255, 0.7); font-weight: 900; line-height: 50px; margin-bottom: 10px; text-shadow: 0 0 0.05em #333, 0 0 0.05em #333;">Nome de usuário:</div><div style="float: right; margin-bottom: 10px; width: 70%; text-align: right;"><input type="text" placeholder="ze_viola..."></div>
-								<div style="float: left; width: 30%; height: 50px; font-family: cursive; font-size: 25px; color: rgba(100, 130, 255, 0.7); font-weight: 900; line-height: 50px; margin-bottom: 10px; text-shadow: 0 0 0.05em #333, 0 0 0.05em #333;">Email:</div><div style="float: right; margin-bottom: 10px; width: 70%; text-align: right;"><input type="text" placeholder="ze_viola@violeiro.com"></div>
-								<div style="float: left; width: 30%; height: 50px; font-family: cursive; font-size: 25px; color: rgba(100, 130, 255, 0.7); font-weight: 900; line-height: 50px; margin-bottom: 10px; text-shadow: 0 0 0.05em #333, 0 0 0.05em #333;">Senha:</div><div style="float: right; width: 70%; text-align: right; margin-bottom: 10px;"><input type="password" placeholder="******"></div>
-								<div style="float: left; width: 30%; height: 50px; font-family: cursive; font-size: 25px; color: rgba(100, 130, 255, 0.7); font-weight: 900; line-height: 50px; margin-bottom: 50px; text-shadow: 0 0 0.05em #333, 0 0 0.05em #333;">Repetir senha:</div><div style="float: right; width: 70%; text-align: right; margin-bottom: 50px;"><input type="password" placeholder="******"></div>
+								<div class="formCampo">Nome artístico:</div><div class="formInput"><input type="text" placeholder="Zé da Viola..."></div>
+								<div class="formCampo">Nome de usuário:</div><div class="formInput"><input type="text" placeholder="ze_viola..."></div>
+								<div class="formCampo">Email:</div><div class="formInput"><input type="text" placeholder="ze_viola@violeiro.com"></div>
+								<div class="formCampo">Senha:</div><div class="formInput"><input type="password" placeholder="******"></div>
+								<div class="formCampo">Repetir senha:</div><div class="formInput"><input type="password" placeholder="******"></div>
+								Cantor Solo: <input type="radio" name="tipoUsuario">Banda: <input type="radio" name="tipoUsuario">
 								<div style="width: 100%; text-align: center;"><input type="submit" value="Cadastrar"></div>
 							</form>
 						</div>

@@ -12,7 +12,8 @@
 			if ($query_login_user->rowCount() == 1) {
 				session_start();
 				$_SESSION['nome'] = $nome;
-				echo $resultado[0]['nacionalidade'];
+				$_SESSION['email'] = $resultado[0]['email'];
+				$_SESSION['nacionalidade'] = $resultado[0]['nacionalidade'];
 			}
 			else {
 				echo "Usuario inexistente.";
@@ -20,5 +21,5 @@
 		}
 	}
 	$login = new Login('arthur1', '030197');
-	echo $_SESSION['nome'];
+	print_r($_SESSION);
 ?>

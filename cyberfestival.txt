@@ -1,0 +1,41 @@
+Cyber Festival
+//Site consiste em rede social para bandas
+//Tem que ser algo revolucionario
+//Integração total com o facebook***(estudar api facebook php)
+/*Pode compartilhar videos, associar bandas, anunciar shows, dar e receber feedback de musicas,
+  enfim, deve ter todo o necessario para a promocao da banda e para o divertimento do usuario*/
+//Usuario
+	//Dois tipos de usuarios:
+		//Usuario artista:
+			//Cadastro:
+				//Primeiro faz o cadastro assim como o fã
+				//Depois, é necessário informar se é um cantor solo ou se tem uma banda (pode ter perfil pub tb)
+				//Cantor solo:
+					//informações necessárias
+				//Banda:
+					//informar quantos integrantes, podendo modificar posteriormente
+					//Quem cria a banda pode adicionar ou remover integrantes
+					//Pode adicionar administradores tambem
+					//Administradores não podem ser removidos
+					//Pode fazer associações entre bandas
+					//É possível lançar álbuns, singles ou EP's (pagamentos no futuro)
+					//Criação de uma página para a banda, com capa, informações relevantes, show marcados
+					//Possivel venda de ingressos pelo site (no futuro)
+					//Sistema para contratar bandas para tocar
+				//Pub (Local que contrata bandas ou cantores para fazer shows ao vivo):
+					//Pagina do pub anunciando proximos shows
+					//Sistema para anunciar vaga de show
+					//Fazer promoções
+		//Usuario fã:
+			//Timeline:
+				//Musicas de bandas ou cantores curtidos
+				//Proximos shows por banda e por pub
+				//Postagens próprias ou de amigos
+			//Pagina fã clube:
+				//Pode adicionar amigos
+				//Marcar de ir em shows
+				//Ganhar desconto em shows se formar uma galera
+			//Dar feedback para artistas
+			//Escutar musicas free
+			//Comprar musicas que sao pagas
+			//Comprar ingressos para shows
