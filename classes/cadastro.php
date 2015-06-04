@@ -2,7 +2,7 @@
 	//"AQUEK QUE NUNCA ERROU NUNCA TENTOU UMA COISA NOVO" ALBERT EINSTEN
 	include('define.php');
 	class Cadastro {
-		function __construct($tipo,$nome,$estilo,$membros[$n_membros]) {
+		function __construct($tipo,$nome,$nacionalidade,$senha,$estilo,$membros[$n_membros]) {
 		if($tipo = 'u'){//se o tipo de cadastro for user
 				$dbh = new PDO('mysql:dbname='.DB_NAME.';host='.HOST_NAME.';charset=utf8', HOST_USR, HOST_PASS);//recebe info do website do mesmo modo que o cadastro do user
 				$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
