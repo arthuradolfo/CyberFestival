@@ -1,4 +1,4 @@
 <?php
 	include('classes/cadastro.php');
-	$cadastro = new Cadastro('arthur1', 'arthur1_adolfo@hotmail.com', '030197', 'brasileiro');
+	$cadastro = new Cadastro('arthurbobao', 'arthur1@dorneles.com', '030197', 'bobolandia');
 ?>
