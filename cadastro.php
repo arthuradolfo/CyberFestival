@@ -1,0 +1,4 @@
+<?php
+	include_once("src/php/configs/base.php");
+	$cadastro = new Cadastro('arthurbobao', 'arthur1@dorneles.com', 'bobolandia', '030197', 1);
+?>
