@@ -7,5 +7,5 @@ $baseDir = $vendorDir;
 
 return array(
     $vendorDir . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
-    $vendorDir . '/mysql-db-class/MysqliDb.php',
+    $vendorDir . '/joshcam/mysqli-database-class/MysqliDb.php',
 );

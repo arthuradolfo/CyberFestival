@@ -4,9 +4,11 @@
     "type": "library",
     "require": {
         "ezyang/htmlpurifier": "^4.6",
-        "mysqli-db-class": "^2.1"
+        "phpmailer/phpmailer": "^5.2",
+        "phpunit/phpunit": "^4.7",
+        "joshcam/mysqli-database-class": "^2.1",
     },
-    "license": "MIT",
+    "license": "CF",
     "authors": [
         {
             "name": "Arthur Adolfo",
