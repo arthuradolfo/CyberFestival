@@ -113,7 +113,7 @@ define("CAMINHO_IMAGEM", URL_SISTEMA."/sources/img");
  * O caminho url das fotos enviado pelos usuários
  * @var string  CAMINHO_URL_FOTO
  */
-define("CAMINHO_URL_FOTO", URL_SISTEMA."/uploads/fotos"); 
+define("CAMINHO_URL_FOTO", URL_SISTEMA."/uploads/fotos");  
 
  /**
  * O caminho url dos videos enviado pelos usuários
@@ -138,4 +138,10 @@ define("CAMINHO_JS", URL_SISTEMA."/sources/js");
  * @var string  CAMINHO_FORM_ACTION
  */
 define("CAMINHO_FORM_ACTION", URL_SISTEMA."/sources/php/actions");
+
+ /**
+ * O caminho url para ativação de conta
+ * @var string  CAMINHO_URL_ATIVACAO
+ */
+define("CAMINHO_URL_ATIVACAO", CAMINHO_FORM_ACTION."/ativacao.php");
 

@@ -17,7 +17,8 @@
 define("MODO_DEV", true);
 
 include_once('paths.php'); //contem as constantes de todos os
-include_once('credenciais_bancodedados.php');   	 // credenciais de acesso ao banco de dados caminhos do sistema
+include_once('infoContato.php');//Credenciais email de contato
+include_once('credenciais_bancodedados.php');// credenciais de acesso ao banco de dados caminhos do sistema
 include_once('sistema.php');//constantes com informaçoes importantes para o funcionamento do sistema
 include_once('handlers.php'); //precisa para o autoload
 include_once(CAMINHO_BIBLIOTECAS.'/autoload.php'); //chama a funcao do autoloader para carregar todas as classes

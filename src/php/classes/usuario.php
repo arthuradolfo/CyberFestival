@@ -6,10 +6,10 @@
  * @package  Usuário
  * @author Arthur Adolfo <arthur_adolfo@hotmail.com>
  * @version 1.0
- * @copyright CyberFestival
+ * @copyright CyberFestival 2015
  */
 
-class Usuario {
+class Usuario extends Cadastro {
 	/**
 	 * ID do usuário no banco de dados 
 	 * Caso o usuário exista seu id será diferente de NULO
@@ -181,16 +181,21 @@ class Usuario {
 
 	public function salvaDados() {
 		$this->validaDados();
-		$cadastro = new Cadastro;
 		if(is_null($this->getId())) {
-			$id = $cadastro->insereDadosBancoDeDados($this->setDados());
+			$id = parent::insereDadosBancoDeDados($this->setDados(), TABELA_USUARIOS);
 			$this->setId($id);
 			if(is_null($this->getId())) {
 				throw new Exception("Erro ao cadastrar usuário! ".Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
+			$this->carregaDados(array('id' => $id));
+			$dados = array( "id" => $id,
+							"nome" => $this->getNome(),
+							"email" => $this->getEmail()
+							);
+			parent::enviaEmailConfirmacao($dados);//true - email de confirmação
 		}
 		else {
-			$cadastro->atualizaDadosBancoDeDados($this->setDados());
+			parent::atualizaDadosBancoDeDados($this->setDados(), TABELA_USUARIOS);
 		}
 	}
 
@@ -657,7 +662,7 @@ class Usuario {
 	}
 
     /**
-     * Retorna o interesse musical de perfil do usuário
+     * Retorna o interesse musical do usuário
      * @return array interesse musical do usuário
      */
 	private function getInteresseMuscial() {

@@ -5,24 +5,63 @@
 	 *
 	 */
 
+	/**
+	 * O número que identifica como administrador
+	 * @var string  USER_TYPE_ADMIN
+	 */
+	define("USER_TYPE_ADMIN", 0);
 
-	define("USER_TYPE_ADMIN", 0); //define constante para identificacao do tipo do usuario, se ele é administrador
+	/**
+	 * O número que identifica como artista
+	 * @var string  USER_TYPE_ARTIST
+	 */
+	define("USER_TYPE_ARTIST", 1);
 
-	define("USER_TYPE_ARTIST", 1); //define constante para identificacao do tipo do usuario, se ele é artista
+	/**
+	 * O número que identifica como fã
+	 * @var string  USER_TYPE_FAN
+	 */
+	define("USER_TYPE_FAN", 2);
 
-	define("USER_TYPE_FAN", 2); //define constante para identificacao do tipo do usuario, se ele é fã
+	/**
+	 * O número que identifica como produtor
+	 * @var string  USER_TYPE_PRODUTOR
+	 */
+	define("USER_TYPE_PRODUTOR", 3);
 
-	define("USER_TYPE_PRODUTOR", 3); //define constante para identificacao do tipo do usuario, se ele é produtor
+	/**
+	 * O tamanho mínimo para a senha
+	 * @var string  TAMANHO_MINIMO_SENHA
+	 */
+	define("TAMANHO_MINIMO_SENHA", 8);
 
-	define("TAMANHO_MINIMO_SENHA", 8); //define constante para tamanho mínimo para a senha
+	/**
+	 * O número que identifica usuário como inativo
+	 * @var string  USUARIO_INATIVO
+	 */
+	define("USUARIO_INATIVO", 0);
 
-	define("USUARIO_INATIVO", 0); //define constante para tamanho mínimo para a senha
+	/**
+	 * O número que identifica usuário como ativo
+	 * @var string  USUARIO_ATIVO
+	 */
+	define("USUARIO_ATIVO", 1); 
 
-	define("USUARIO_ATIVO", 1); //define constante para tamanho mínimo para a senha
+	/**
+	 * O número que identifica usuário como esperando a confirmação por email
+	 * @var string  USUARIO_ESPERANDO_CONFIRMACAO_EMAIL
+	 */
+	define("USUARIO_ESPERANDO_CONFIRMACAO_EMAIL", 2);
 
-	define("USUARIO_ESPERANDO_CONFIRMACAO_EMAIL", 2); //define constante para tamanho mínimo para a senha
-
-	define("USUARIO_RECUPERANDO_SENHA", 3); //define constante para tamanho mínimo para a senha
-
-	define("USUARIO_TROCANDO_PERFIL", 4); //define constante para tamanho mínimo para a senha
+	/**
+	 * O número que identifica usuário como recuperando a senha
+	 * @var string  USUARIO_RECUPERANDO_SENHA
+	 */
+	define("USUARIO_RECUPERANDO_SENHA", 3);
+ 
+	/**
+	 * O número que identifica usuário como trocando o perfil
+	 * @var string  USUARIO_TROCANDO_PERFIL
+	 */
+	define("USUARIO_TROCANDO_PERFIL", 4);
 ?>
