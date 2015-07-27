@@ -14,7 +14,7 @@ define("IP_DATABASE","localhost");
 * @var string NOME_DATABASE
 * 
 */
-define("NOME_DATABASE","CyberFestival");
+define("NOME_DATABASE","cyberfestival");
 /**
 * Usuário do banco de dados
 * @var string USUARIO_DATABASE

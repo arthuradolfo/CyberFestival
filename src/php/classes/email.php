@@ -15,8 +15,11 @@
 		 */
 
 		function __construct() {
-			if(!$this->carregaInformacoesEmail()) {
-				trigger_error("Erro inesperado! Não foi possível crair email! ".Utilidades::debugBacktrace(), E_USER_ERROR);
+			try {
+				$this->carregaInformacoesEmail();
+			}
+			catch(Exception $e) {
+				trigger_error("Erro inesperado! Não foi possível criar email! ".$e->getMessage().Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
 		}
 
@@ -37,7 +40,7 @@
 	        $this->Password   = SENHA_EMAIL_SISTEMA; // senha remetente
 	        $this->SetFrom(EMAIL_SISTEMA, NOME_SISTEMA); 
 	        $this->IsHTML(true);
-	        $this->CharSet = 'UTF-8';  
+	        $this->CharSet = 'UTF-8'; 
 		}
 
 		/**
@@ -117,7 +120,7 @@
 				
 			}
 			else {
-	       		$this->AddAddress($email $nome); 
+	       		$this->AddAddress($email, $nome); 
 	       	}
 		}
 
@@ -137,7 +140,7 @@
 				
 			}
 			else {
-	        	$this->AddCC($email $nome); 
+	        	$this->AddCC($email, $nome); 
 	        }
 		}
 
@@ -157,7 +160,7 @@
 				
 			}
 			else {
-	        	$this->AddBCC($email $nome); 
+	        	$this->AddBCC($email, $nome); 
 	        }
 		}
 

@@ -141,11 +141,11 @@ class MysqliDb
         if (is_object ($host))
             $this->_mysqli = $host;
         else
-            $this->host = $host;
-
-        $this->username = $username;
-        $this->password = $password;
-        $this->db = $db;
+            $this->host = IP_DATABASE;
+        
+        $this->username = USUARIO_DATABASE;
+        $this->password = SENHA_DATABASE;
+        $this->db = NOME_DATABASE;
         $this->port = $port;
         $this->charset = $charset;
 

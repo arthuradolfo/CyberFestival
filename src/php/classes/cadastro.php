@@ -15,28 +15,28 @@
 		 * @var query 
 		 */
 
-		$lastQuery;
+		private $lastQuery;
 
 		/**
 		 * Guarda ultimos dados inseridos no banco de dados e em qual tabela
 		 * @var array 
 		 */
 
-		$dadosInseridos;
+		private $dadosInseridos;
 
 		/**
 		 * Guarda ultimos dados atualizados no banco de dados e em qual tabela
 		 * @var array 
 		 */
 
-		$dadosAtualizados;
+		private $dadosAtualizados;
 
 		/**
 		 * Codigo para ativação de conta
 		 * @var string 
 		 */
 
-		$codigoAtivacao;
+		private $codigoAtivacao;
 
 		function __construct() {
 			
@@ -48,7 +48,7 @@
 		 * @return int id do usuário
 		 */
 
-		public insereDadosBancoDeDados($dados, $tabela) {
+		public function insereDadosBancoDeDados($dados, $tabela) {
 			if(!is_array($dados) || is_null($dados)) {
 				throw new InvalidArgumentException("Erro! Dados inválidos! ".Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
@@ -57,8 +57,10 @@
 			if(!$id) {
 				throw new Exception("Erro ao cadastrar! ".$query->getLastError().Utilidades::debugBacktrace());
 			}
+			$dados['id'] = $id; //seta o id para o novo id do usuario (MUITO IMPORTANTE)
 			$this->setLastQuery($query);
 			$this->setDadosInseridos($dados);
+			var_dump($this->getDadosInseridos());
 			return $id;
 		}
 
@@ -67,7 +69,7 @@
 		 * @param array dados do usuário
 		 */
 
-		public atualizaDadosBancoDeDados($dados, $tabela) {
+		public function atualizaDadosBancoDeDados($dados, $tabela) {
 			if(!is_array($dados) || is_null($dados)) {
 				throw new InvalidArgumentException("Erro! Dados inválidos! ".Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
@@ -85,17 +87,18 @@
 		 * @param array array('id', 'nome', 'email')
 		 */
 
-		public enviaEmailConfirmacao($dados) {
+		public function enviaEmailConfirmacao($dados) {
 			try {
-				$this->setCodigoAtivacao(Utilidades::geraCodigoAtivacao());
+				$this->setCodigoAtivacao(Utilidades::geraCodigoAtivacao($dados['email']));
 				$email = new Email;
 				$email->setTitulo(EMAIL_TITULO_CONFIRMACAO);
-				$email->setMensagem(EMAIL_MENSAGEM_CONFIRMACAO."<a href='".CAMINHO_URL_CONFIRMACAO."?codigoAtivacao=".$this->getCodigoAtivacao()."'>Clique aqui para ativar!</a>");
+				$email->setMensagem(EMAIL_MENSAGEM_CONFIRMACAO."<a href='".LINK_ATIVACAO."?codigoAtivacao=".$this->getCodigoAtivacao()."'>Clique aqui para ativar!</a>");
 				$this->insereCodigoAtivacaoDB($dados['id']);
 				$email->setDestinatario($dados['email'], $dados['nome']);
 				$email->sendEmail();
+			}
 			catch(Exception $e) {
-				trigger_error("Ocorreu um erro! ".Utilidaes::debugBacktrace(), $e->getMessage(), $e->getCode);
+				trigger_error("Ocorreu um erro! ".Utilidades::debugBacktrace(), $e->getMessage());
 			}
 		}
 
@@ -104,7 +107,7 @@
 		 * @param array array('id', 'nome', 'email', 'titulo', 'mensagem', 'anexos')
 		 */
 
-		public enviaEmail($dados) {
+		public function enviaEmail($dados) {
 			try {
 				$email = new Email;
 				$email->setTitulo($dados['titulo']);
@@ -116,6 +119,7 @@
 				}
 				$email->setDestinatario($dados['email'], $dados['nome']);
 				$email->sendEmail();
+			}
 			catch(Exception $e) {
 				trigger_error("Ocorreu um erro! ".Utilidaes::debugBacktrace(), $e->getMessage(), $e->getCode);
 			}
@@ -125,10 +129,13 @@
 			if(is_null($id)) {
 				throw new Exception("Erro! Id de usuário nulo! ".Utildiades::debugBacktrace());
 			}
+			echo $id;
 			$query = new MysqliDB;
 			$query->where('id', $id);
-			$this->insereCodigoAtivacaoEmDadosInseridos($this->getCodigoAtivacao);
-			$dados = $this->getDadosInseridos;
+			$this->insereCodigoAtivacaoEmDadosInseridos($this->getCodigoAtivacao());
+			echo "codigo ativacao".$this->getCodigoAtivacao();
+			$dados = $this->getDadosInseridos();
+			var_dump($dados);
 			if(!$query->update(TABELA_USUARIOS, $dados)) {
 				throw new Exception("Erro ao atualizar! ".$query->getLastError().Utilidades::debugBacktrace());
 			}
@@ -142,7 +149,8 @@
 		 */
 		private function insereCodigoAtivacaoEmDadosInseridos($codigo) {
 			$dados = $this->getDadosInseridos();
-			$dados['codigoAtivacao'] = $codigo;
+			$dados['codigoVerificacao'] = $codigo;
+			$this->setDadosInseridos($dados);
 		}
 
 		/**
@@ -151,10 +159,17 @@
 		 */
 
 		private function setLastQuery($query) {
+			$this->validaLastQuery($query);
+			$this->lastQuery = $query;
+		}
+
+		/**
+		 * Valida lastQuery
+		 */
+		private function validaLastQuery($query) {
 			if(is_null($query)) {
 				throw new Exception("Erro ao armazenar última query! ".Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
-			$this->lastQuery = $query;
 		}
 
 		/**
@@ -172,10 +187,17 @@
 		 */
 
 		private function setCodigoAtivacao($codigo) {
+			$this->validaCodigoAtivacao($codigo);
+			$this->codigoAtivacao = $codigo;
+		}
+
+		/**
+		 * Valida codigo de ativacao
+		 */
+		private function validaCodigoAtivacao($codigo) {
 			if(is_null($codigo)) {
 				throw new Exception("Erro ao armazenar codigo de ativação! ".Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
-			$this->codigoAtivacao = $codigo;
 		}
 
 		/**
@@ -193,12 +215,19 @@
 		 */
 
 		private function setDadosInseridos($dados) {
+			$this->validaDadosInseridos($dados);
+			$this->dadosInseridos = $dados;
+		}
+
+		/**
+		 * Valida dados inseridos
+		 */
+		private function validaDadosInseridos($dados) {
 			if(is_null($this->getLastQuery())) {
 				if(is_null($dados) || !is_array($dados)) {
 					throw new Exception("Erro ao armazenar últimos dados inseridos! ".Utilidades::debugBacktrace(), E_USER_ERROR);
 				}
 			}
-			$this->dadosInseridos = $dados;
 		}
 
 		/**
@@ -216,12 +245,19 @@
 		 */
 
 		private function setDadosAtualizados($dados) {
+			$this->validaDadosAtualizados($dados);
+			$this->dadosAtualizados = $dados;
+		}
+
+		/**
+		 * Valida dados atualizados
+		 */
+		private function validaDadosAtualizados($dados) {
 			if(is_null($this->getLastQuery())) {
 				if(is_null($dados) || !is_array($dados)) {
 					throw new Exception("Erro ao armazenar últimos dados atualizados! ".Utilidades::debugBacktrace(), E_USER_ERROR);
 				}
 			}
-			$this->dadosAtualizados = $dados;
 		}
 
 		/**

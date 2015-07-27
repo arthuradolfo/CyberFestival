@@ -21,13 +21,6 @@ define("URL_SISTEMA", "http://".$_SERVER['HTTP_HOST'].PASTA_RAIZ);
  */
 define("URL_PORTAL", URL_SISTEMA.'/index.php');
 
-//!!!!!A implementar !!!!!!!
-/**
- * A url do painel de controle, onde só o adminsitrador do sistema deve ter acesso
- * @var string URL_PAINEL_DE_CONTROLE
- */
-//define("URL_PAINEL_DE_CONTROLE", URL_SISTEMA.'/admin/');
-
  /**
  * O caminho nível-servidor dos arquivos
  * @var string  CAMINHO_SISTEMA
@@ -67,28 +60,59 @@ define("CAMINHO_UPLOAD", CAMINHO_SISTEMA."/uploads");
 
  /**
  * O caminho nível-servidor dos arquivos enviado pelos usuários
- * @var string  CAMINHO_UPLOAD_ARQUIVO
+ * @var string  CAMINHO_UPLOAD_USUARIOS
  */
-define("CAMINHO_UPLOAD_ARQUIVO", CAMINHO_UPLOAD."/arquivos");
+define("CAMINHO_UPLOAD_USUARIOS", CAMINHO_UPLOAD."/usuarios");
 
  /**
  * O caminho nível-servidor das fotos enviado pelos usuários
- * @var string  CAMINHO_FOTO
+ * @var string  CAMINHO_USUARIOS_FOTOS
  */
-define("CAMINHO_FOTO", CAMINHO_UPLOAD."/fotos"); 
+define("CAMINHO_USUARIOS_FOTOS", CAMINHO_UPLOAD_USUARIOS."/fotos"); 
+
+ /**
+ * O caminho nível-servidor das fotos de perfil enviado pelos usuários
+ * @var string  CAMINHO_USUARIOS_FOTO_PERFIL
+ */
+define("CAMINHO_USUARIOS_FOTO_PERFIL", CAMINHO_UPLOAD_USUARIOS."/fotosperfil"); 
  
  /**
  * O caminho nível-servidor dos videos enviados pelos usuários
- * @var string  CAMINHO_VIDEO
+ * @var string  CAMINHO_USUARIOS_VIDEO
  */
-define("CAMINHO_VIDEO", CAMINHO_UPLOAD."/videos"); 
+define("CAMINHO_USUARIOS_VIDEO", CAMINHO_UPLOAD_USUARIOS."/videos"); 
  
  
  /**
- * O caminho nível-servidor dos audios enviados pelos usuários
- * @var string  CAMINHO_AUDIO
+ * O caminho nível-servidor das musicas enviados pelos usuários
+ * @var string  CAMINHO_USUARIOS_MUSICAS
  */
-define("CAMINHO_AUDIO", CAMINHO_UPLOAD."/audios"); 
+define("CAMINHO_USUARIOS_MUSICAS", CAMINHO_UPLOAD_USUARIOS."/musicas"); 
+
+ /**
+ * O caminho nível-servidor dos arquivos enviado pelas bandas
+ * @var string  CAMINHO_UPLOAD_BANDAS
+ */
+define("CAMINHO_UPLOAD_BANDAS", CAMINHO_UPLOAD."/bandas");
+
+ /**
+ * O caminho nível-servidor das fotos enviado pelas bandas
+ * @var string  CAMINHO_BANDAS_FOTOS
+ */
+define("CAMINHO_BANDAS_FOTOS", CAMINHO_UPLOAD_BANDAS."/fotos"); 
+ 
+ /**
+ * O caminho nível-servidor dos videos enviados pelas bandas
+ * @var string  CAMINHO_BANDAS_VIDEO
+ */
+define("CAMINHO_BANDAS_VIDEO", CAMINHO_UPLOAD_BANDAS."/videos"); 
+ 
+ 
+ /**
+ * O caminho nível-servidor das musicas enviados pelas bandas
+ * @var string  CAMINHO_BANDAS_MUSICAS
+ */
+define("CAMINHO_BANDAS_MUSICAS", CAMINHO_UPLOAD_BANDAS."/musicas"); 
  
 
  /**

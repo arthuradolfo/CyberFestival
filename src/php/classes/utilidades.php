@@ -63,25 +63,6 @@ class Utilidades{
 
         return password_hash($email, PASSWORD_BCRYPT, $opcoes);
     }
-
-    
-    /**
-     * Gera o um hash apartir da senha passada
-     *
-     * @link   http://php.net/manual/pt_BR/function.password-hash.php
-     * @param  string $senha Senha a ter seu hash gerado
-     * @return string        Hash da senha
-     */
-    static public function geraHashSenha($senha){
-        $opcoes = array(
-            //custo da geração da senha, quanto maior mais seguro, 
-            //porém mais custoso em termos de performance
-            'cost' => 14, 
-            'salt' => uniqid(mt_rand(), true) // adiciona o 'salt' do hash
-        );
-
-        return password_hash($senha, PASSWORD_BCRYPT, $opcoes);
-    }
     /**
      * Purifica a entrada HTML, usando a classe HTMLPurifier
      *                                                           

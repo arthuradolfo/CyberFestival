@@ -51,12 +51,6 @@
 		private $fans;
 
 		/**
-		 * id do fã clube da banda
-		 * @var int id do fã clube
-		 */
-		private $fanClube;
-
-		/**
 		 * Array de fãs da banda array("integrante1" => array("id"     => idIntegrante1,
 		 *													  "funcao" => funcaoIntegrante1
 		 *													  ),
@@ -74,8 +68,9 @@
 					throw new InvalidArgumentException("Erro! Id inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
 				}
 				else {
-					validaId();
-					carregaDados(array('id' => $id));
+					if(Utilidades::valoresExistenteDB(array('id' => $id), TABELA_USUARIOS)) {
+						$this->carregaDados(array('id' => $id));
+					}
 				}
 			}
 		}
@@ -110,7 +105,6 @@
 	            	$this->setEmail($dados['email']);
 	            	$this->setEstilo($dados['estilo']);
 	            	$this->setCidade($dados['cidade']);
-	            	$this->setFanClube($dados['fanClube']);
 	            	$this->setEventos($this->carregaEventos($this->getId()));
 	            	$this->setFans($this->carregaFans($this->getId()));
 	            	$this->setIntegrantes($this->carregaIntegrantes($this->getId()));
@@ -131,7 +125,11 @@
 	     */
 		private function getDados() {
 			try {
-				$dados = array( "id" => $this->getId()
+				$dados = array( "id" => $this->getId(),
+		        				"nome" => $this->getNome(),
+		        				"email" => $this->getEmail(),
+		        				"estilo" => $this->getEstilo(),
+		        				"cidade" => $this->getCidade()
 		        				);
 			}
 			catch(Exception $e) {
@@ -141,29 +139,23 @@
 		}
 
 		/**
-		 * Valida o id da banda
-		 */
-		private function validaId() {
-			$query = new MysqliDB;
-			$query->where('id', $this->getId());
-			if(!$query->getOne(TABELA_BANDAS)) {
-				trigger_error("Banda não existe no banco de dados! ".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-		}
-
-		/**
 		 * Define o id da banda
 		 * @param int id da banda
 		 */
 		private function setId($id) {
+			$this->validaId($id);
+			$this->id = $id;
+		}
+
+		/**
+		 * Valida o id da banda
+		 */
+		private function validaId($id) {
 			if(!is_int($id)) {
 				throw new InvalidArgumentException("Erro ao definir id da banda. Esperava um inteiro, recebeu um ".gettype($id).Utilidades::debugBacktrace(), E_USER_ERROR);				
 			}
 			else if(is_null($id)) {
 				throw new InvalidArgumentException("Erro ao definir id da banda. Inteiro nulo!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else {
-				$this->id = $id;
 			}
 		}
 
@@ -180,14 +172,19 @@
 		 * @param string nome da banda
 		 */
 		private function setNome($nome) {
+			$this->validaNome($nome);
+			$this->nome = $nome;
+		}
+
+		/**
+		 * Valida o nome da banda
+		 */
+		private function validaNome($nome) {
 			if(!is_string($nome)) {
 				throw new InvalidArgumentException("Erro ao definir nome da banda. Esperava uma string, recebeu um ".gettype($nome).Utilidades::debugBacktrace(), E_USER_ERROR);				
 			}
 			else if(is_null($nome)) {
 				throw new InvalidArgumentException("Erro ao definir nome da banda. String nula!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else {
-				$this->nome = $nome;
 			}
 		}
 
@@ -204,14 +201,19 @@
 		 * @param string email da banda
 		 */
 		private function setEmail($email) {
+			$this->validaEmail($email);
+			$this->email = $email;
+		}
+
+		/**
+		 * Valida o email da banda
+		 */
+		private function validaEmail($email) {
 			if(!is_string($email)) {
 				throw new InvalidArgumentException("Erro ao definir email da banda. Esperava uma string, recebeu um ".gettype($email).Utilidades::debugBacktrace(), E_USER_ERROR);				
 			}
 			else if(is_null($email)) {
 				throw new InvalidArgumentException("Erro ao definir email da banda. String nula!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else {
-				$this->email = $email;
 			}
 		}
 
@@ -228,14 +230,19 @@
 		 * @param string estilo da banda
 		 */
 		private function setEstilo($estilo) {
+			$this->validaEstilo($estilo);
+			$this->estilo = $estilo;
+		}
+
+		/**
+		 * Valida o estilo da banda
+		 */
+		private function validaEstilo($estilo) {
 			if(!is_string($estilo)) {
 				throw new InvalidArgumentException("Erro ao definir estilo da banda. Esperava uma string, recebeu um ".gettype($estilo).Utilidades::debugBacktrace(), E_USER_ERROR);				
 			}
 			else if(is_null($estilo)) {
 				throw new InvalidArgumentException("Erro ao definir estilo da banda. String nula!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else {
-				$this->estilo = $estilo;
 			}
 		}
 
@@ -252,14 +259,19 @@
 		 * @param string cidade da banda
 		 */
 		private function setCidade($cidade) {
+			$this->validaCidade($cidade);
+			$this->cidade = $cidade;
+		}
+
+		/**
+		 * Valida o estilo da banda
+		 */
+		private function validaCidade($cidade) {
 			if(!is_string($cidade)) {
 				throw new InvalidArgumentException("Erro ao definir cidade da banda. Esperava uma string, recebeu um ".gettype($cidade).Utilidades::debugBacktrace(), E_USER_ERROR);				
 			}
 			else if(is_null($cidade)) {
 				throw new InvalidArgumentException("Erro ao definir cidade da banda. String nula!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else {
-				$this->cidade = $cidade;
 			}
 		}
 
@@ -276,14 +288,19 @@
 		 * @param array eventos da banda
 		 */
 		private function setEventos($eventos) {
+			$this->validaEventos($eventos);
+			$this->eventos = $eventos;
+		}
+
+		/**
+		 * Valida o estilo da banda
+		 */
+		private function validaEventos($eventos) {
 			if(!is_array($eventos)) {
 				throw new InvalidArgumentException("Erro ao definir eventos da banda. Esperava um array, recebeu um ".gettype($eventos).Utilidades::debugBacktrace(), E_USER_ERROR);				
 			}
 			else if(is_null($eventos)) {
 				throw new InvalidArgumentException("Erro ao definir eventos da banda. Array nulo!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else {
-				$this->eventos = $eventos;
 			}
 		}
 
@@ -300,14 +317,19 @@
 		 * @param array fãs da banda
 		 */
 		private function setFans($fans) {
+			$this->validaFans($fans);
+			$this->fans = $fans;
+		}
+
+		/**
+		 * Valida os fãs da banda
+		 */
+		private function validaFans($fans) {
 			if(!is_array($fans)) {
 				throw new InvalidArgumentException("Erro ao definir fãs da banda. Esperava um array, recebeu um ".gettype($fans).Utilidades::debugBacktrace(), E_USER_ERROR);				
 			}
 			else if(is_null($fans)) {
 				throw new InvalidArgumentException("Erro ao definir fãs da banda. Array nulo!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else {
-				$this->fans = $fans;
 			}
 		}
 
@@ -320,42 +342,23 @@
 		}
 
 		/**
-		 * Define o fã clube da banda
-		 * @param string fã clube da banda
-		 */
-		private function setFanClube($fanClube) {
-			if(!is_string($fanClube)) {
-				throw new InvalidArgumentException("Erro ao definir fã clube da banda. Esperava uma string, recebeu um ".gettype($fanClube).Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else if(is_null($fanClube)) {
-				throw new InvalidArgumentException("Erro ao definir fã clube da banda. String nula!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else {
-				$this->fanClube = $fanClube;
-			}
-		}
-
-		/**
-		 * Retorna o fã clube da banda
-		 * @return string fã clube da banda
-		 */
-		public function getFanClube() {
-			return $this->fanClube;
-		}
-
-		/**
 		 * Define integrantes da banda
 		 * @param array integrantes da banda
 		 */
 		private function setIntegrantes($integrantes) {
+			$this->validaIntegrantes($integrantes);
+			$this->integrantes = $integrantes;
+		}
+
+		/**
+		 * Valida os integrantes da banda
+		 */
+		private function validaIntegrantes($integrantes) {
 			if(!is_array($integrantes)) {
 				throw new InvalidArgumentException("Erro ao definir integrantes da banda. Esperava um array, recebeu um ".gettype($integrantes).Utilidades::debugBacktrace(), E_USER_ERROR);				
 			}
 			else if(is_null($integrantes)) {
 				throw new InvalidArgumentException("Erro ao definir integrantes da banda. Array nulo!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else {
-				$this->integrantes = $integrantes;
 			}
 		}
 
