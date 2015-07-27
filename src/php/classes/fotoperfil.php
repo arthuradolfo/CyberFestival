@@ -24,10 +24,23 @@
 		private $id;
 
 		/**
+		 * Arquivo da foto a fazer upload
+		 * @var file dados do arquivo da foto
+		 */
+		private $arquivo;
+
+		/**
 		 * Nome para a foto
 		 * @var string nome da foto
 		 */
 		private $nome;
+
+		/**
+		 * Nome de usuário para a foto
+		 * @var string nome do usuário da foto
+		 */
+		private $nomeUsuario;
+
 
 		/**
 		 * Caminho para a foto
@@ -36,10 +49,11 @@
 		private $caminho;
 
 		/**
-		 * Arquivo da foto a fazer upload
-		 * @var file dados do arquivo da foto
+		 * Tipos permitidos
+		 * @var array tipos permitidos
 		 */
-		private $arquivo;
+		private $tiposPermitidos = array("bmp", "gif", "jpeg", "jpg", "png");
+
 
 		/**
 		 * Construtor da classe, se id não for nulo, carrega dados da foto de perfil
@@ -57,7 +71,8 @@
 					if(Utilidades::valoresExistenteDB(array('id_usuario' => $idUsuario), TABELA_USUARIOS)) {
 						$this->carregaDados(array('id_usuario' => $idUsuario));
 					}
-					else {	
+					else {
+						$usuario = new Usuario($idUsuario);
 						$this->setIdUsuario($idUsuario);
 					}
 				}
@@ -106,16 +121,26 @@
 
 	    /**
 	     * Retorna informações da foto
+	     * @param boolean Se for true, carrega o arquivo nos dados
 	     * @return array dados da foto
 	     */
-		public function getDados() {
+		public function getDados($arquivo = false) {
 			try {
-				$dados = array( "id" => $this->getId(),
-	        					"id_usuario" => $this->usuario->getId(),
-	        					"nome" => $this->getNome(),
-		        				"caminho" => $this->getCaminho(),
-		        				"arquivo" => $this->getArquivo()
-		        				);
+				if($arquivo) {
+					$dados = array( "id" => $this->getId(),
+		        					"id_usuario" => $this->usuario->getId(),
+		        					"nome" => $this->getNome(),
+			        				"caminho" => $this->getCaminho(),
+			        				"arquivo" => $this->getArquivo()
+			        				);
+				}
+				else {
+					$dados = array( "id" => $this->getId(),
+		        					"id_usuario" => $this->usuario->getId(),
+		        					"nome" => $this->getNome(),
+			        				"caminho" => $this->getCaminho()
+			        				);
+				}
 			}
 			catch(Exception $e) {
 				trigger_error("Ocorreu algum erro!".Utilidades::debugBacktrace(), E_USER_ERROR);
@@ -126,17 +151,35 @@
 
 		/**
 		 * Salva dados no banco de dados (atualiza cadastro com a foto de perfil)
+		 * Se id for nulo, cadastra nova foto de perfil no banco de dados
+		 * Se não for nulo, atualiza banco de dados
 	     * @throws Exception Ocorreu erro
 		 */
 
 		public function salvaDados() {
 			$this->validaDados();
-			try {
-				parent::insereDadosBancoDeDados($this->getDados(), TABELA_FOTOS_PERFIL);
-				parent::uploadArquivo($this->getDados());
+			$this->validaExtensao();
+			if(is_null($this->getId())) {
+				try {
+					$id = parent::insereDadosBancoDeDados($this->getDados(), TABELA_FOTOS_PERFIL);
+					$this->setId($id);
+					if(is_null($this->getId())) {
+						throw new Exception("Erro ao cadastrar foto! ".Utilidades::debugBacktrace(), E_USER_ERROR);
+					}
+					parent::uploadArquivo($this->getDados(true));
+				}
+				catch(Exception $e) {
+					trigger_error("Ocorreu um erro ao tentar salvar dados da foto no DB! ".$e->getMessage().Utildiades::debugBacktrace(), $e->getCode());
+				}
 			}
-			catch(Exception $e) {
-				trigger_error("Ocorreu um erro ao tentar salvar dados da foto no DB! ".$e->getMessage().Utildiades::debugBacktrace(), $e->getCode());
+			else {
+				try {
+					parent::atualizaDadosBancoDeDados($this->getDados(), TABELA_FOTOS_PERFIL);
+					parent::uploadArquivo($this->getDados(true));
+				}
+				catch(Exception $e) {
+					trigger_error("Ocorreu um erro ao tentar salvar dados da foto no DB! ".$e->getMessage().Utildiades::debugBacktrace(), $e->getCode());
+				}
 			}
 		}
 
@@ -161,6 +204,33 @@
 			if(is_null($this->getArquivo())) {
 				throw new InvalidArgumentException("Erro! Arquivo inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
+		}
+
+		/**
+		 * Valida o id do usuário
+	     * @throws InvalidArgumentException Uso de argumentos inválidos
+		 */
+		private function validaExtensao() {
+			$tipoPermitido = false;
+			foreach($this->getTiposPermitidos as $tipo){
+	            if(strtolower($this-getExtensao()) == strtolower($tipo)){
+	                $tipoPermitido = true;
+	            }
+	        }
+	        if(!$tipoPermitido){
+	            throw new Exception("Erro! Tipo não é permitido! envie outro arquivo!".Utilidade::debugBacktrace(), E_USER_ERROR);
+	        }
+		}
+
+	    /**
+	     * Retorna informações da foto
+	     * @return array dados da foto
+	     */
+		public function getExtensao($arquivo) {
+			$this->validaArquivo($arquivo);
+			$tipos = explode(".", $arquivo["name"]); //se arquivo.ext tipos[0] = "arquivo" e tipos[1] = "ext"
+			$extensao = $tipos[count($tipos) - 1];
+			return $extensao;
 		}
 
 	    /**
@@ -196,7 +266,6 @@
 	     */
 		public function setNome($nome) {
 			$this->validaNome($nome);
-			$this->getUsuario()->setFotoPerfil($nome); //Atualiza o caminho da foto de perfil nos dados do usuário para atualizar o DB
 			$this->nome = $nome;
 		}
 
@@ -216,6 +285,33 @@
 	     */
 		private function getNome() {
 			return $this->nome;
+		}
+
+	    /**
+	     * Define nome do usuário da foto
+	     * @param string nome do usuário da foto
+	     */
+		public function setNomeUsuario($nomeUsuario) {
+			$this->validaNomeUsuario($nomeUsuario);
+			$this->nomeUsuario = $nomeUsuario;
+		}
+
+		/**
+		 * Valida nome do usuário da foto
+	     * @throws InvalidArgumentException Uso de argumentos inválidos
+		 */
+		private function validaNomeUsuario($nomeUsuario) {
+			if(!is_string($nomeUsuario)) {
+				throw new InvalidArgumentException("Erro ao definir o url da foto. Esperava uma string, recebeu ".gettype($nomeUsuario).Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
+		}
+
+		/**
+	     * Retorna nome do usuário da foto
+	     * @return string nome do usuário da foto
+	     */
+		private function getNomeUsuario() {
+			return $this->nomeUsuario;
 		}
 
 	    /**
@@ -246,33 +342,6 @@
 		}
 
 	    /**
-	     * Define objeto usuario da foto
-	     * @param object usuário
-	     */
-		public function setUsuario($usuario) {
-			$this->validaUsuario($usuario);
-			$this->usuario = $usuario;
-		}
-
-		/**
-		 * Valida objeto usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaUsuario($usuario) {
-			if(!$usuario instanceof Usuario) {
-				throw new InvalidArgumentException("Erro ao definir o objeto usuário. Esperava um objeto, recebeu ".gettype($usuario).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-		}
-
-		/**
-	     * Retorna objeto usuário
-	     * @return object usuário
-	     */
-		private function getUsuario() {
-			return $this->usuario;
-		}
-
-	    /**
 	     * Define o arquivo da foto
 	     * @param file foto
 	     */
@@ -297,6 +366,33 @@
 	     */
 		private function getArquivo() {
 			return $this->arquivo;
+		}
+
+	    /**
+	     * Define os tipos permitidos
+	     * @param array tipos permitidos
+	     */
+		public function setTiposPermitidos($tipos) {
+			$this->validaTiposPermitidos($tipos);
+			$this->tiposPermitidos = $tiposPermitidos;
+		}
+
+		/**
+		 * Valida o tipos permitidos
+	     * @throws InvalidArgumentException Uso de argumentos inválidos
+		 */
+		private function validaTiposPermitidos($tiposPermitidos) {
+			if(!is_file($tiposPermitidos)) {
+				throw new InvalidArgumentException("Erro ao definir os tipos permitidos. Esperava um array, recebeu ".gettype($tiposPermitidos).Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
+		}
+
+		/**
+	     * Retorna tiposPermitidos
+	     * @return file
+	     */
+		private function getTiposPermitidos() {
+			return $this->tiposPermitidos;
 		}
 	}
 ?>

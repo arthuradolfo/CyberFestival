@@ -91,6 +91,7 @@
 	    /**
 		 * Retorna o tipo do arquivo
 	     * @param file
+	     * @return array extensão do arquivo no último índice do array
 	     * @throws InvalidArgumentException Uso de argumentos inválidos
 		 */
 		private function informacoesTipoArquivo($arquivo) {
@@ -113,7 +114,7 @@
 	            }
 	        }
 	        if(!$tipoPermitido){
-	            throw new Exception("Erro! Tipo não é permitido! envie outro arquivo!", 1);
+	            throw new Exception("Erro! Tipo não é permitido! envie outro arquivo!".Utilidade::debugBacktrace(), E_USER_ERROR);
 	            
 	        }
 		}

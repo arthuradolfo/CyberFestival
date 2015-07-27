@@ -45,7 +45,8 @@
 		private $senhaHash;
 
 		/**
-		 * @var string foto de perfil do usuário
+		 * Ex: $fotoPerifl['id'], $fotoPerifl['id_usuario'], $fotoPerifl['nome'], $fotoPerfi['caminho']
+		 * @var array informações da foto de perfil.
 		 */
 		private $fotoPerfil;
 
@@ -140,7 +141,7 @@
 			        $this->setEstilo($dados['estilo']);
 			        $this->setStatus($dados['status']);
 			        $this->setDataCadastro($dados['dataCadastro']);
-			        //$this->setFotoPerfil($this->carregaFotoPerfil($this->getId()));
+			        $this->setFotoPerfil($this->carregaFotoPerfil($this->getId()));
 			        //$this->setInteresseMusical($this->carregaInteresseMusical($this->getId()));
 			        if($this->isArtistUser()) {
 			        	//$this->setInstrumentos($this->carregaInstrumentos($this->getId()));
@@ -159,28 +160,40 @@
 		}
 
 		/**
-		 * Salva dados no banco de dados (faz novo cadastro)
-		 *
+		 * Salva dados no banco de dados
+		 * Se id for nulo, cadastra novo usuário no banco de dados
+		 * Se não for nulo, atualiza banco de dados
+	     * @throws Exception Ocorreu erro
 		 */
 
 		public function salvaDados() {
 			$this->validaDados();
 			if(is_null($this->getId())) {
-				$id = parent::insereDadosBancoDeDados($this->getDados(), TABELA_USUARIOS);
-				$this->setId($id);
-				if(is_null($this->getId())) {
-					throw new Exception("Erro ao cadastrar usuário! ".Utilidades::debugBacktrace(), E_USER_ERROR);
+				try {
+					$id = parent::insereDadosBancoDeDados($this->getDados(), TABELA_USUARIOS);
+					$this->setId($id);
+					if(is_null($this->getId())) {
+						throw new Exception("Erro ao cadastrar usuário! ".Utilidades::debugBacktrace(), E_USER_ERROR);
+					}
+					$this->carregaDados(array('id' => $id));
+					$dados = array( "id" => $id,
+									"nome" => $this->getNome(),
+									"email" => $this->getEmail()
+									);
+					parent::enviaEmailConfirmacao($dados);
+					$this->carregaDados(array('id' => $id));
 				}
-				$this->carregaDados(array('id' => $id));
-				$dados = array( "id" => $id,
-								"nome" => $this->getNome(),
-								"email" => $this->getEmail()
-								);
-				parent::enviaEmailConfirmacao($dados);
-				$this->carregaDados(array('id' => $id));
+				catch(Exception $e) {
+					trigger_error("Ocorreu um erro ao tentar salvar dados do usuário no DB! ".$e->getMessage().Utildiades::debugBacktrace(), $e->getCode());
+				}
 			}
 			else {
-				parent::atualizaDadosBancoDeDados($this->getDados(), TABELA_USUARIOS);
+				try {
+					parent::atualizaDadosBancoDeDados($this->getDados(), TABELA_USUARIOS);
+				}
+				catch(Exception $e) {
+					trigger_error("Ocorreu um erro ao tentar salvar dados do usuário no DB! ".$e->getMessage().Utildiades::debugBacktrace(), $e->getCode());
+				}
 			}
 		}
 
@@ -253,7 +266,20 @@
 			}
 			else {
 				$fotoPerfil = new FotoPerfil($this->getId());
-				return $fotoPerfil->getNome();
+				return $fotoPerfil->getDados();
+			}
+		}
+
+		public function uploadFotoPerfil($arquivo) {
+			try {
+				$fotoPerfil = new FotoPerfil($this->getId());
+				$fotoPerfil->setArquivo($arquivo);
+				$fotoPerfil->setNome($this->getNome().$fotoPefil->getExtensao($this->getArquivo()));
+				$fotoPerfil->setCaminho(CAMINHO_USUARIOS_FOTO_PERFIL.$fotoPerfil->getNome());
+				$fotoPerfil->salvaDados();
+			}
+			catch(Exception $e) {
+				trigger_error("Ocorreu um erro inesperado!".$e->getMessage().Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
 		}
 
@@ -560,7 +586,7 @@
 
 	    /**
 	     * Define a foto de perfil do usuário
-	     * @param string url da foto de perfil do usuário a ser definido
+	     * @param array informarções foto de perfil
 	     */
 		public function setFotoPerfil($fotoPerfil) {
 			$this->validaFotoPerfil($fotoPerfil);
@@ -572,8 +598,8 @@
 	     * @throws InvalidArgumentException Uso de argumentos inválidos
 		 */
 		private function validaFotoPerfil($fotoPerfil) {
-			if(!is_string($fotoPerfil)) {
-				throw new InvalidArgumentException("Erro ao definir a foto de perfil do usuário. Esperava uma string, recebeu ".gettype($fotoPerfil).Utilidades::debugBacktrace(), E_USER_ERROR);
+			if(!is_array($fotoPerfil)) {
+				throw new InvalidArgumentException("Erro ao definir a foto de perfil do usuário. Esperava um array, recebeu ".gettype($fotoPerfil).Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
 			else if(is_null($fotoPerfil)) {
 				throw new InvalidArgumentException("Erro ao definir a foto de perfil do usuário. String nula".Utilidades::debugBacktrace(), E_USER_ERROR);
