@@ -320,6 +320,23 @@
 		}
 
 		/**
+	     * Carrega instrumentos do usuário
+	     * @param int id do usuário
+	     * @return array instrumentos do usuário
+	     * @throws InvalidArgumentException caso ocorra erro
+	     */
+
+		private function carregaBandas($id) {
+			if(!is_int($id)) {
+				throw new InvalidArgumentException("Erro, Espera receber um inteiro, recebeu ". gettype($id).Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
+			else {
+				$bandas = new Banda;
+				return $instrumentos->getInstrumentos();
+			}
+		}
+
+		/**
 	     * Verifica se usuário é administrador
 	     * @return boolean se for administrador é true, se não, false
 	     */

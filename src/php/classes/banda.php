@@ -68,8 +68,11 @@
 					throw new InvalidArgumentException("Erro! Id inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
 				}
 				else {
-					if(Utilidades::valoresExistenteDB(array('id' => $id), TABELA_USUARIOS)) {
+					if(Utilidades::valoresExistenteDB(array('id' => $id), TABELA_BANDAS)) {
 						$this->carregaDados(array('id' => $id));
+					}
+					else {
+						throw new Exception("Erro! Banda inexistente no banco de dados!".Utilidades::debugBacktrace(), E_USER_ERROR);
 					}
 				}
 			}
@@ -138,6 +141,27 @@
 			return $dados;
 		}
 
+	    /**
+	     * Retorna informações da banda do usuário
+	     * @param int id do usuário
+	     * @return array dados das bandas
+	     */
+		private function getBandasUsuario($id) {
+			validaId($id);
+			if(Utilidades::valoresExistenteDB(array('id' => $id), TABELA_USUARIOS)) {
+				$query = new MysqliDb;
+				$query->where("id_usuario", $id);
+				$bandas = $query->get(TABELA_INTEGRANTES_BANDA);
+				foreach($bandas as $banda) {
+					$query->where("id", $banda['id_banda']);
+					$bandasUsuario[] = $query->getOne(TABELA_BANDAS);
+				}
+				return $bandasUsuario;
+			}
+			else {
+				throw new Exception("Erro! Banda inexistente no banco de dados!".Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
+		}
 		/**
 		 * Define o id da banda
 		 * @param int id da banda
