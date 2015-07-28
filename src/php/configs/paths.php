@@ -7,7 +7,7 @@
  * definições do ambiente
  * @var string PASTA_RAIZ
  */
-define("PASTA_RAIZ","/CyberFestival");
+define("PASTA_RAIZ","CyberFestival");
 
  /**
  * A url do sistema 

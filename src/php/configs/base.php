@@ -19,6 +19,7 @@ define("MODO_DEV", true);
 include_once('paths.php'); //contem as constantes de todos os
 include_once('info_contato.php');//Credenciais email de contato
 include_once('mensagens_email.php');//Constantes com mensagens para email
+include_once('descricoes.php');//Constantes com descrições
 include_once('tipos_arquivos.php');//Constantes com tipos de arquivos
 include_once('credenciais_bancodedados.php');// credenciais de acesso ao banco de dados caminhos do sistema
 include_once('tabelas_db.php');//Constantes com as tabelas do banco de dados

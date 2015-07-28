@@ -81,17 +81,17 @@
 	 * O tamanho máximo para upload de arquivos
 	 * @var int  TAMANHO_MAXIMO_ARQUIVO
 	 */
-	define("TAMANHO_MAXIMO_ARQUIVO", 786432000);
+	define("TAMANHO_MAXIMO_ARQUIVO", 2786432000);
 
 	/**
 	 * O largura máxima para upload de arquivos
 	 * @var int  TAMANHO_MAXIMA_FOTO_PERFIL
 	 */
-	define("LARGURA_MAXIMA_FOTO_PERFIL", 540);
+	define("LARGURA_MAXIMA_FOTO_PERFIL", 2056);
 
 	/**
 	 * O altura máxima para upload de arquivos
 	 * @var int  ALTURA_MAXIMA_FOTO_PERFIL
 	 */
-	define("ALTURA_MAXIMA_FOTO_PERFIL", 540);
+	define("ALTURA_MAXIMA_FOTO_PERFIL", 2056);
 ?>

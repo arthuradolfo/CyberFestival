@@ -51,4 +51,10 @@ define("TABELA_USUARIOS_INSTRUMENTOS", "usuarios_instrumentos");
  */
 define("TABELA_FOTOS_PERFIL", "fotos_perfil");
 
+/**
+ * Constante para a tabela de fotos dos usuários
+ * @var string TABELA_FOTO
+ */
+define("TABELA_FOTOS", "fotos");
+
 ?>

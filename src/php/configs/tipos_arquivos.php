@@ -9,5 +9,5 @@
 	 * Tipo de arquivo para upload
 	 * @var int TIPO_ARQUIVO_FOTO_PERFIL
 	 */
-	define("TIPO_ARQUIVO_FOTO_PERFIL", 1); 
+	define("TIPO_ARQUIVO_FOTO_PERFIL", 1);
 ?>

@@ -274,8 +274,9 @@
 			try {
 				$fotoPerfil = new FotoPerfil($this->getId());
 				$fotoPerfil->setArquivo($arquivo);
-				$fotoPerfil->setNome($this->getNome().$fotoPefil->getExtensao($this->getArquivo()));
-				$fotoPerfil->setCaminho(CAMINHO_USUARIOS_FOTO_PERFIL.$fotoPerfil->getNome());
+				$fotoPerfil->setNome($this->getNome().".".$fotoPerfil->getExtensao($arquivo));
+				$fotoPerfil->setCaminho(CAMINHO_USUARIOS_FOTO_PERFIL."/".$fotoPerfil->getNome());
+				$fotoPerfil->setDataCadastro(date("y-m-d"));
 				$fotoPerfil->salvaDados();
 			}
 			catch(Exception $e) {
@@ -332,7 +333,7 @@
 			}
 			else {
 				$bandas = new Banda;
-				return $instrumentos->getInstrumentos();
+				return $bandas->getBandasUsuario();
 			}
 		}
 
@@ -455,7 +456,6 @@
 	     * @param string email do usuário a ser definido
 	     */
 		public function setEmail($email, $troca = false) {
-			echo $email;
 			$this->validaEmail($email);
 			//Se estiver trocando o email
 			if($troca) {

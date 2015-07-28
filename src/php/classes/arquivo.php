@@ -68,17 +68,17 @@
 	     * @throws InvalidArgumentException em caso de argumento inválido
 	     * @throws Exception em caso de erro
 	     */
-	    private function uploadArquivo($dados) {
+	    public function uploadArquivo($dados) {
 	    	if(!is_array($dados)) {
 	    		throw new InvalidArgumentException("Erro ao fazer upload de arquivo! Espera um array, recebeu ".gettype($dados).Utilidades::debugBacktrace(), E_USER_ERROR);	    		
 	    	}
 	    	else {
 	    		if(!is_null($dados['arquivo']) && !is_null($dados['caminho'])) {
-	    			$this->validaTipo($this->informaçõesTipoArquivo($dados['arquivo']));
+	    			$this->validaTipo($this->informacoesTipoArquivo($dados['arquivo']));
 	    			$this->validaTamanho($dados['arquivo']['size']);
 	    			if($this->getConfiguracao()['largura']) {
-	    				validaAltura();
-	    				validaLargura();
+	    				$this->validaAltura(getimagesize($dados['arquivo']["tmp_name"])[0]);
+	    				$this->validaLargura(getimagesize($dados['arquivo']["tmp_name"])[1]);
 	    			}
 		        	move_uploaded_file($dados['arquivo']['tmp_name'], $dados['caminho']);
 	    		}
@@ -108,7 +108,7 @@
 		private function validaTipo($tipos) {
 			$tipoPermitido = false;
 			$tipoArquivo = $tipos[count($tipos) - 1];//se arquivo.ext tipos[0] = "arquivo" e tipos[1] = "ext" pega ultimo indice
-	        foreach($this->getTiposPermitidos as $tipo){
+	        foreach($this->getTiposPermitidos() as $tipo){
 	            if(strtolower($tipoArquivo) == strtolower($tipo)){
 	                $tipoPermitido = true;
 	            }
@@ -117,6 +117,42 @@
 	            throw new Exception("Erro! Tipo não é permitido! envie outro arquivo!".Utilidade::debugBacktrace(), E_USER_ERROR);
 	            
 	        }
+		}
+
+		/**
+		 * Valida o tamanho do arquivo
+	     * @param int tamanho do arquivo
+	     * @throws Exception caso ocorra erro
+		 */
+		private function validaTamanho($tamanho) {
+			if($tamanho > $this->getConfiguracao()['tamanho']) {
+				throw new Exception("Erro! Arquivo muito grande!".Utilidades::debugBacktrace(), E_USER_ERROR);
+				
+			}
+		}
+
+		/**
+		 * Valida a largura do arquivo
+	     * @param int largura do arquivo
+	     * @throws Exception caso ocorra erro
+		 */
+		private function validaLargura($largura) {
+			if($largura > $this->getConfiguracao()['largura']) {
+				throw new Exception("Erro! Foto muito larga!".Utilidades::debugBacktrace(), E_USER_ERROR);
+				
+			}
+		}
+
+		/**
+		 * Valida a altura do arquivo
+	     * @param int altura do arquivo
+	     * @throws Exception caso ocorra erro
+		 */
+		private function validaAltura($altura) {
+			if($altura > $this->getConfiguracao()['altura']) {
+				throw new Exception("Erro! Foto muito alta!".Utilidades::debugBacktrace(), E_USER_ERROR);
+				
+			}
 		}
 
 	    /**
@@ -187,7 +223,7 @@
 	     * @throws InvalidArgumentException Uso de argumentos inválidos
 		 */
 		private function validaArquivo($arquivo) {
-			if(!is_file($arquivo)) {
+			if(!isset($arquivo)) {
 				throw new InvalidArgumentException("Erro ao definir o arquivo. Esperava um arquivo, recebeu ".gettype($arquivo).Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
 		}
@@ -214,7 +250,7 @@
 	     * @throws InvalidArgumentException Uso de argumentos inválidos
 		 */
 		private function validaTiposPermitidos($tiposPermitidos) {
-			if(!is_file($tiposPermitidos)) {
+			if(!is_array($tiposPermitidos)) {
 				throw new InvalidArgumentException("Erro ao definir os tipos permitidos. Esperava um array, recebeu ".gettype($tiposPermitidos).Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
 		}
@@ -225,85 +261,6 @@
 	     */
 		private function getTiposPermitidos() {
 			return $this->tiposPermitidos;
-		}
-
-		$erro = $config = array();
-
-		// Prepara a variável do arquivo
-		$arquivo = isset($_FILES["foto"]) ? $_FILES["foto"] : FALSE;
-
-		// Tamanho máximo do arquivo (em bytes)
-		$config["tamanho"] = 500000000;
-		// Largura máxima (pixels)
-		$config["largura"] = 540;
-		// Altura máxima (pixels)
-		$config["altura"]  = 540;
-
-		// Formulário postado... executa as ações
-		if($arquivo)
-		{  
-		    // Verifica se o mime-type do arquivo é de imagem
-		    if(!eregi("^image\/(pjpeg|jpeg|png|gif|bmp)$", $arquivo["type"]))
-		    {
-		        $erro[] = "Arquivo em formato inválido! A imagem deve ser jpg, jpeg, 
-					bmp, gif ou png. Envie outro arquivo";
-		    }
-		    else
-		    {
-		        // Verifica tamanho do arquivo
-		        if($arquivo["size"] > $config["tamanho"])
-		        {
-		            $erro[] = "Arquivo em tamanho muito grande! 
-				A imagem deve ser de no máximo " . $config["tamanho"] . " bytes. 
-				Envie outro arquivo";
-		        }
-		        
-		        // Para verificar as dimensões da imagem
-		        $tamanhos = getimagesize($arquivo["tmp_name"]);
-		        
-		        // Verifica largura
-		        if($tamanhos[0] > $config["largura"])
-		        {
-		            $erro[] = "Largura da imagem não deve 
-						ultrapassar " . $config["largura"] . " pixels";
-		        }
-
-		        // Verifica altura
-		        if($tamanhos[1] > $config["altura"])
-		        {
-		            $erro[] = "Altura da imagem não deve 
-						ultrapassar " . $config["altura"] . " pixels";
-		        }
-		    }
-		    
-		    // Imprime as mensagens de erro
-		    if(sizeof($erro))
-		    {
-		        foreach($erro as $err)
-		        {
-		            echo " - " . $err . "<BR>";
-		        }
-
-		        echo "<a href=\"foto.html\">Fazer Upload de Outra Imagem</a>";
-		    }
-
-		    // Verificação de dados OK, nenhum erro ocorrido, executa então o upload...
-		    else
-		    {
-		        // Pega extensão do arquivo
-		        preg_match("/\.(gif|bmp|png|jpg|jpeg){1}$/i", $arquivo["name"], $ext);
-
-		        // Gera um nome único para a imagem
-		        $imagem_nome = md5(uniqid(time())) . "." . $ext[1];
-
-		        // Caminho de onde a imagem ficará
-		        $imagem_dir = "fotos/" . $imagem_nome;
-
-		        // Faz o upload da imagem
-		        move_uploaded_file($arquivo["tmp_name"], $imagem_dir);
-
-		        echo "Sua foto foi enviada com sucesso!";
-		    }
 		}
 	}
 ?>
