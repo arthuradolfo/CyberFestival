@@ -130,37 +130,34 @@
 		}
 
 	    /**
+	     * Retorna informações da foto para inserir no DB
+	     * @return array dados da foto
+	     */
+		public function getDadosBanco() {
+			$dados = array( "id"         => $this->getId(),
+        					"id_usuario" => $this->getIdUsuario(),
+        					"nome"       => $this->getNome(),
+	        				"caminho"    => $this->getCaminho(),
+	        				"descricao"  => $this->getDescricao(),
+	        				"tipo"       => $this->getTipo(),
+	        				"data"       => $this->getDataCadastro()
+	        				);
+			return $dados;
+		}
+
+	    /**
 	     * Retorna informações da foto
-	     * @param boolean Se for true, carrega o arquivo nos dados
 	     * @return array dados da foto
 	     */
 		public function getDados($arquivo = false) {
-			try {
-				if($arquivo) {
-					$dados = array( "id"         => $this->getId(),
-		        					"id_usuario" => $this->getIdUsuario(),
-		        					"nome"       => $this->getNome(),
-			        				"caminho"    => $this->getCaminho(),
-			        				"descricao"  => $this->getDescricao(),
-			        				"tipo"       => $this->getTipo(),
-			        				"arquivo"    => $this->getArquivo(),
-			        				"data"       => $this->getDataCadastro()
-			        				);
-				}
-				else {
-					$dados = array( "id"         => $this->getId(),
-		        					"id_usuario" => $this->getIdUsuario(),
-		        					"nome"       => $this->getNome(),
-			        				"caminho"    => $this->getCaminho(),
-			        				"descricao"  => $this->getDescricao(),
-			        				"tipo"       => $this->getTipo(),
-			        				"data"       => $this->getDataCadastro()
-			        				);
-				}
-			}
-			catch(Exception $e) {
-				trigger_error("Ocorreu algum erro!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
+			$dados = array( "id"         => $this->getId(),
+        					"id_usuario" => $this->getIdUsuario(),
+        					"nome"       => $this->getNome(),
+	        				"caminho"    => $this->getCaminho(),
+	        				"descricao"  => $this->getDescricao(),
+	        				"tipo"       => $this->getTipo(),
+	        				"data"       => $this->getDataCadastro()
+	        				);
 			return $dados;
 		}
 
@@ -176,13 +173,13 @@
 			$this->validaExtensao();
 			if(is_null($this->getId())) {
 				try {
-					$id = parent::insereDadosBancoDeDados($this->getDados(), TABELA_FOTOS);
+					$id = parent::insereDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS);
 					$this->setId($id);
 					if(is_null($this->getId())) {
 						throw new Exception("Erro ao cadastrar foto! ".Utilidades::debugBacktrace(), E_USER_ERROR);
 					}
 					$this->carregaDados(array('id' => $id));
-					parent::uploadArquivo($this->getDados(true));
+					parent::uploadArquivo($this->getDados());
 				}
 				catch(Exception $e) {
 					trigger_error("Ocorreu um erro ao tentar salvar dados da foto no DB! ".$e->getMessage().Utilidades::debugBacktrace(), E_USER_ERROR);
@@ -190,8 +187,8 @@
 			}
 			else {
 				try {
-					parent::atualizaDadosBancoDeDados($this->getDados(), TABELA_FOTOS);
-					parent::uploadArquivo($this->getDados(true));
+					parent::atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS);
+					parent::uploadArquivo($this->getDados());
 				}
 				catch(Exception $e) {
 					trigger_error("Ocorreu um erro ao tentar salvar dados da foto no DB! ".$e->getMessage().Utilidades::debugBacktrace(), $e->getCode());
@@ -209,7 +206,7 @@
 			$this->validaExtensao();
 			if(is_null($this->getId())) {
 				try {
-					$id = parent::insereDadosBancoDeDados($this->getDados(), TABELA_FOTOS);
+					$id = parent::insereDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS);
 					$this->setId($id);
 					if(is_null($this->getId())) {
 						throw new Exception("Erro ao cadastrar foto! ".Utilidades::debugBacktrace(), E_USER_ERROR);

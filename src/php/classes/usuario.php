@@ -140,7 +140,7 @@
 			        $this->setTipo($dados['tipo']);
 			        $this->setEstilo($dados['estilo']);
 			        $this->setStatus($dados['status']);
-			        $this->setDataCadastro($dados['dataCadastro']);
+			        $this->setDataCadastro($dados['data']);
 			        $this->setFotoPerfil($this->carregaFotoPerfil($this->getId()));
 			        //$this->setInteresseMusical($this->carregaInteresseMusical($this->getId()));
 			        if($this->isArtistUser()) {
@@ -170,7 +170,7 @@
 			$this->validaDados();
 			if(is_null($this->getId())) {
 				try {
-					$id = parent::insereDadosBancoDeDados($this->getDados(), TABELA_USUARIOS);
+					$id = parent::insereDadosBancoDeDados($this->getDadosBanco(), TABELA_USUARIOS);
 					$this->setId($id);
 					if(is_null($this->getId())) {
 						throw new Exception("Erro ao cadastrar usuário! ".Utilidades::debugBacktrace(), E_USER_ERROR);
@@ -184,12 +184,12 @@
 					$this->carregaDados(array('id' => $id));
 				}
 				catch(Exception $e) {
-					trigger_error("Ocorreu um erro ao tentar salvar dados do usuário no DB! ".$e->getMessage().Utildiades::debugBacktrace(), $e->getCode());
+					trigger_error("Ocorreu um erro ao tentar salvar dados do usuário no DB! ".$e->getMessage().Utilidades::debugBacktrace(), E_USER_ERROR);
 				}
 			}
 			else {
 				try {
-					parent::atualizaDadosBancoDeDados($this->getDados(), TABELA_USUARIOS);
+					parent::atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_USUARIOS);
 				}
 				catch(Exception $e) {
 					trigger_error("Ocorreu um erro ao tentar salvar dados do usuário no DB! ".$e->getMessage().Utildiades::debugBacktrace(), $e->getCode());
@@ -198,21 +198,48 @@
 		}
 
 	    /**
+	     * Retorna informações do usuário para cadastrar no DB
+	     * @return array dados do usuário
+	     */
+		public function getDadosBanco() {
+			try {
+				$dados = array( "id"                => $this->getId(),
+	        					"nome"              => $this->getNome(),
+	        					"nacionalidade"     => $this->getNacionalidade(),
+		        				"email"             => $this->getEmail(),
+		        				"senha"             => $this->getSenhaHash(),
+		        				"tipo"              => $this->getTipo(),
+		        				"estilo"            => $this->getEstilo(),
+		        				"status"            => $this->getStatus(),
+		        				"data"              => $this->getDataCadastro(),
+		        				"codigoVerificacao" => NULL
+		        				);
+			}
+			catch(Exception $e) {
+				trigger_error("Ocorreu algum erro!".Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
+			return $dados;
+		}
+
+	    /**
 	     * Retorna informações do usuário
 	     * @return array dados do usuário
 	     */
 		public function getDados() {
 			try {
-				$dados = array( "id" => $this->getId(),
-	        					"nome" => $this->getNome(),
-	        					"nacionalidade" => $this->getNacionalidade(),
-		        				"email" => $this->getEmail(),
-		        				"senha" => $this->getSenhaHash(),
-		        				"tipo" => $this->getTipo(),
-		        				"estilo" => $this->getEstilo(),
-		        				"status" => $this->getStatus(),
-		        				"dataCadastro" => $this->getDataCadastro(),
-		        				"codigoVerificacao" => NULL
+				$dados = array( "id"               => $this->getId(),
+	        					"nome"             => $this->getNome(),
+	        					"nacionalidade"    => $this->getNacionalidade(),
+		        				"email"            => $this->getEmail(),
+		        				"senha"            => $this->getSenhaHash(),
+		        				"tipo"             => $this->getTipo(),
+		        				"estilo"           => $this->getEstilo(),
+		        				"status"           => $this->getStatus(),
+		        				"data"             => $this->getDataCadastro(),
+		        				"fotoPerfil"       => $this->getFotoPerfil(),
+		        				"instrumentos"     => $this->getInstrumentos(),
+		        				"interesseMusical" => $this->getInteresseMusical(),
+		        				"bandas"           => $this->getBandas()
 		        				);
 			}
 			catch(Exception $e) {
@@ -251,6 +278,33 @@
 			if(is_null($this->getDataCadastro())) {
 				throw new InvalidArgumentException("Erro! Data de cadastro inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
+		}
+
+		/**
+		 * Carrega informações do usuário pelo Id
+		 * @param int id do usuário
+		 */
+		public function carregaUsuarioPorId($id) {
+			$this->validaId($id);
+			$this->carregaDados(array("id" => $id));
+		}
+
+		/**
+		 * Carrega informações do usuário pelo nome
+		 * @param string nome do usuário
+		 */
+		public function carregaUsuarioPorNome($nome) {
+			$this->validaNome($nome);
+			$this->carregaDados(array("nome" => $nome));
+		}
+
+		/**
+		 * Carrega informações do usuário pelo email
+		 * @param string email do usuário
+		 */
+		public function carregaUsuarioPorEmail($email) {
+			$this->validaEmail($email);
+			$this->carregaDados(array("email" => $email));
 		}
 
 		/**
@@ -750,7 +804,7 @@
 	     * Retorna o interesse musical do usuário
 	     * @return array interesse musical do usuário
 	     */
-		private function getInteresseMuscial() {
+		private function getInteresseMusical() {
 			return $this->interesseMusical;
 		}
 

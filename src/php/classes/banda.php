@@ -139,7 +139,7 @@
 			$this->validaDados();
 			if(is_null($this->getId())) {
 				try {
-					$id = parent::insereDadosBancoDeDados($this->getDados(), TABELA_BANDAS);
+					$id = parent::insereDadosBancoDeDados($this->getDadosBanco(), TABELA_BANDAS);
 					$this->setId($id);
 					if(is_null($this->getId())) {
 						throw new Exception("Erro ao cadastrar banda! ".Utilidades::debugBacktrace(), E_USER_ERROR);
@@ -153,7 +153,7 @@
 			}
 			else {
 				try {
-					parent::atualizaDadosBancoDeDados($this->getDados(), TABELA_BANDAS);
+					parent::atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_BANDAS);
 
 				}
 				catch(Exception $e) {
@@ -163,10 +163,10 @@
 		}
 
 	    /**
-	     * Retorna informações da banda
+	     * Retorna informações da banda para inserir no DB
 	     * @return array dados da banda
 	     */
-		public function getDados() {
+		public function getDadosBanco() {
 			try {
 				$dados = array( "id"     => $this->getId(),
 		        				"nome"   => $this->getNome(),
@@ -174,6 +174,29 @@
 		        				"estilo" => $this->getEstilo(),
 		        				"cidade" => $this->getCidade(),
 		        				"data"   => $this->getDataCadastro()
+		        				);
+			}
+			catch(Exception $e) {
+				trigger_error("Ocorreu algum erro!".Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
+			return $dados;
+		}
+
+	    /**
+	     * Retorna informações da banda
+	     * @return array dados da banda
+	     */
+		public function getDados() {
+			try {
+				$dados = array( "id"          => $this->getId(),
+		        				"nome"        => $this->getNome(),
+		        				"email"       => $this->getEmail(),
+		        				"estilo"      => $this->getEstilo(),
+		        				"cidade"      => $this->getCidade(),
+		        				"eventos"     => $this->getEventos(),
+		        				"fans"        => $this->getFans(),
+		        				"integrantes" => $this->getIntegrantes(),
+		        				"data"        => $this->getDataCadastro()
 		        				);
 			}
 			catch(Exception $e) {
