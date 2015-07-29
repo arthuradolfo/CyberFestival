@@ -10,7 +10,7 @@
 	 * @copyright CyberFestival 2015
 	 */
 
-	class FotoPerfil extends Arquivo {
+	class FotoPerfil extends Arquivo implements AcoesCadastroCarregamento {
 		/**
 		 * Id da foto
 		 * @var id da foto
@@ -68,30 +68,13 @@
 				}
 				else {
 					if(Utilidades::valoresExistenteDB(array('id_usuario' => $idUsuario), TABELA_FOTOS_PERFIL)) {
-						$this->carregaDados(array('id_usuario' => $idUsuario));
+						Utilidades::carregaDados(array('id_usuario' => $idUsuario), TABELA_FOTOS_PERFIL);
 					}
 					else {
 						$this->setIdUsuario($idUsuario);
 					}
 				}
 			}
-		}
-
-		/**
-		 * Carrega dados do arquivo
-		 * @param array[] dados para buscar no banco de dados
-	     */
-		private function carregaDados($campos) {
-			if(!is_array($campos)){
-	            throw new InvalidArgumentException("Erro ao definar os campos, esperava um array de campos. Recebeu ".gettype($campos).Utilidades::debugBacktrace(), E_USER_ERROR);
-	        }
-
-	        $query = new MysqliDb();
-
-			foreach ($campos as $coluna => $valor) {
-	            $query->where($coluna, $valor);
-	        }
-			$this->setDados($query->getOne(TABELA_FOTOS_PERFIL));
 		}
 
 	    /**

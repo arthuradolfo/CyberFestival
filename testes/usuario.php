@@ -81,6 +81,14 @@
 		 */
 		private $mensagemErroCarregaUsuarioPorEmail;
 		
+		function __construct() {
+			$teste->testaCadastraUsuario();
+			$teste->testaCarregaUsuario();
+			$teste->testaCarregaUsuarioPorId();
+			$teste->testaCarregaUsuarioPorNome();
+			$teste->testaCarregaUsuarioPorEmail();
+			$teste->printaResultado();
+		}
 
 		/**
 		 * Método que testa o cadastro de usuário com todos os erros possíveis e da forma correta
@@ -100,13 +108,6 @@
 			catch(Exception $e) {
 				$this->setErroCadastraUsuario(true);
 				$this->setMensagemErroCadastraUsuario($e->getMessageErroCadastraUsuario());
-			}
-			if($this->getErroCadastraUsuario()) {
-				echo "Erro! Teste falhou! ";
-				var_dump($this->getMensagemErroCadastraUsuario());
-			}
-			else {
-				echo "Teste bem sucedido!";
 			}
 		}
 
@@ -143,13 +144,6 @@
 				$this->setErroCarregaUsuario(true);
 				$this->setMensagemErroCarregaUsuario($e->getMessage());
 			}
-			if($this->getErroCarregaUsuario()) {
-				echo "Erro! Teste falhou! ";
-				var_dump($this->getMensagemErroCarregaUsuario());
-			}
-			else {
-				echo "Teste bem sucedido!";
-			}
 		}
 
 		/**
@@ -167,13 +161,6 @@
 			catch(Exception $e) {
 				$this->setErroCarregaUsuario(true);
 				$this->setMensagemErroCarregaUsuarioPorId($e->getMessage());
-			}
-			if($this->getErroCarregaUsuarioPorId()) {
-				echo "Erro! Teste falhou! ";
-				var_dump($this->getMensagemErroCarregaUsuarioPorId());
-			}
-			else {
-				echo "Teste bem sucedido!";
 			}
 		}
 
@@ -193,13 +180,6 @@
 				$this->setErroCarregaUsuarioPorNome(true);
 				$this->setMensagemErroCarregaUsuarioPorNome($e->getMessage());
 			}
-			if($this->getErroCarregaUsuario()) {
-				echo "Erro! Teste falhou! ";
-				var_dump($this->getMensagemErroCarregaUsuarioPorNome());
-			}
-			else {
-				echo "Teste bem sucedido!";
-			}
 		}
 
 		/**
@@ -217,13 +197,6 @@
 			catch(Exception $e) {
 				$this->setErroCarregaUsuarioPorEmail(true);
 				$this->setMensagemErroCarregaUsuarioPorEmail($e->getMessage());
-			}
-			if($this->getErroCarregaUsuarioPorEmail()) {
-				echo "Erro! Teste falhou! ";
-				var_dump($this->getMensagemErroCarregaUsuarioPorEmail());
-			}
-			else {
-				echo "Teste bem sucedido!";
 			}
 		}
 
@@ -268,6 +241,51 @@
 				$erro = false;
 			}
 			return $erro;
+		}
+
+		/**
+		 * Printa resultado dos testes
+		 */
+		public function printaResultado() {
+			if($this->getErroCadastraUsuario()) {
+				echo "Erro! Teste de cadastramento falhou!<br>";
+				var_dump($this->getMensagemErroCadastraUsuario);
+			}
+			else {
+				echo "Teste de cadastramento bem sucedido!";
+			}
+
+			if($this->getErroCarregaUsuario()) {
+				echo "Erro! Teste de carregamento falhou!<br>";
+				var_dump($this->getMensagemErroCarregaUsuario);
+			}
+			else {
+				echo "Teste de carregamento bem sucedido!";
+			}
+			
+			if($this->getErroCarregaUsuarioPorId()) {
+				echo "Erro! Teste de cadastramento por id falhou!<br>";
+				var_dump($this->getMensagemErroCarregaUsuarioPorId);
+			}
+			else {
+				echo "Teste de cadastramento por id bem sucedido!";
+			}
+			
+			if($this->getErroCarregaUsuarioPorNome()) {
+				echo "Erro! Teste de carregamento por nome falhou!<br>";
+				var_dump($this->getMensagemErroCarregaUsuarioPorNome);
+			}
+			else {
+				echo "Teste de carregamento por nome bem sucedido!";
+			}
+			
+			if($this->getErroCarregaUsuarioPorEmail()) {
+				echo "Erro! Teste de carregamento por email falhou!<br>";
+				var_dump($this->getMensagemErroCarregaUsuarioPorEmail);
+			}
+			else {
+				echo "Teste de carregamento por email bem sucedido!";
+			}
 		}
 
 		/**
@@ -425,10 +443,11 @@
 		}
 	}
 
-	$teste = new TesteUsuario;
-	$teste->testaCadastraUsuario();
-	$teste->testaCarregaUsuario();
-	$teste->testaCarregaUsuarioPorId();
-	$teste->testaCarregaUsuarioPorNome();
-	$teste->testaCarregaUsuarioPorEmail();
+	if(!$_FILES) {
+		$teste = new TesteUsuario;
+	}
 ?>
+<form action="usuario.php" method="post">
+	<input type="file" name="arquivo">
+	<input type="submit">
+</form>

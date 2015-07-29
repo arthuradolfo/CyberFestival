@@ -8,7 +8,7 @@
 	 * @version 1.0
 	 * @copyright CyberFestival 2015
 	 */
-	class Banda extends Cadastro{
+	class Banda extends Cadastro implements AcoesCadastroCarregamento {
 
 		/**
 		 * ID da banda no banco de dados 
@@ -74,31 +74,13 @@
 				}
 				else {
 					if(Utilidades::valoresExistenteDB(array('id' => $id), TABELA_BANDAS)) {
-						$this->carregaDados(array('id' => $id));
+						Utilidades::carregaDados(array('id' => $id), TABELA_BANDAS);
 					}
 					else {
 						throw new Exception("Erro! Banda inexistente no banco de dados!".Utilidades::debugBacktrace(), E_USER_ERROR);
 					}
 				}
 			}
-		}
-
-	    /**
-	     * Carrega dados da banda do banco de dados pelo id
-	     * @param array campos da banda a ser definido
-	     */
-		private function carregaDados($campos) {
-			if(!is_array($campos)){
-	            throw new InvalidArgumentException("Erro ao definar os campos, esperava um array de campos. Recebeu ".gettype($campos).Utilidades::debugBacktrace(), E_USER_ERROR);
-	        }
-
-	        $query = new MysqliDb();
-
-			foreach ($campos as $coluna => $valor) {
-	            $query->where($coluna, $valor);
-	        }
-
-			$this->setDados($query->getOne(TABELA_BANDAS));
 		}
 
 	    /**

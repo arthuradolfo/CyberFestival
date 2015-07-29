@@ -9,7 +9,7 @@
 	 * @copyright CyberFestival 2015
 	 */
 
-	class Usuario extends Cadastro {
+	class Usuario extends Cadastro implements AcoesCadastroCarregamento {
 		/**
 		 * ID do usuário no banco de dados 
 		 * Caso o usuário exista seu id será diferente de NULO
@@ -97,31 +97,13 @@
 				}
 				else {
 					if(Utilidades::valoresExistenteDB(array('id' => $id), TABELA_USUARIOS)) {
-						$this->carregaDados(array('id' => $id));
+						Utilidades::carregaDados(array('id' => $id), TABELA_USUARIOS);
 					}
 					else {	
 						throw new InvalidArgumentException("Id não existe no banco de dados.".Utilidades::debugBacktrace(), E_USER_ERROR);
 					}
 				}
 			}
-		}
-
-	    /**
-	     * Carrega dados do usuário do banco de dados pelo id
-	     * @param array campos do usuário a ser definido
-	     */
-		private function carregaDados($campos) {
-			if(!is_array($campos)){
-	            throw new InvalidArgumentException("Erro ao definar os campos, esperava um array de campos. Recebeu ".gettype($campos).Utilidades::debugBacktrace(), E_USER_ERROR);
-	        }
-
-	        $query = new MysqliDb();
-
-			foreach ($campos as $coluna => $valor) {
-	            $query->where($coluna, $valor);
-	        }
-
-			$this->setDados($query->getOne(TABELA_USUARIOS));
 		}
 
 	    /**
