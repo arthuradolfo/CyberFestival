@@ -8,7 +8,7 @@
 	 * @version 1.0
 	 * @copyright CyberFestival 2015
 	 */
-	class Banda extends Cadastro implements AcoesCadastroCarregamento {
+	class Banda extends AcoesDB implements AcoesCadastroCarregamento {
 
 		/**
 		 * ID da banda no banco de dados 
@@ -68,19 +68,24 @@
 		private $dataCadastro;
 
 		function __construct($id = NULL) {
+			parent::__construct();
 			if(!is_null($id)) {
-				if(!is_int($id)) {
-					throw new InvalidArgumentException("Erro! Id inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
+				TratamentoErros::validaInteiro($id, "id da banda");
+				if(parent::getCarregamento()->valoresExistenteDB(array('id' => $id), TABELA_BANDAS)) {
+					$this->carregaInformacao(array('id' => $id));
 				}
 				else {
-					if(Utilidades::valoresExistenteDB(array('id' => $id), TABELA_BANDAS)) {
-						Utilidades::carregaDados(array('id' => $id), TABELA_BANDAS);
-					}
-					else {
-						throw new Exception("Erro! Banda inexistente no banco de dados!".Utilidades::debugBacktrace(), E_USER_ERROR);
-					}
+					throw new Exception("Erro! Banda inexistente no banco de dados!".Utilidades::debugBacktrace(), E_USER_ERROR);
 				}
 			}
+		}
+
+		/**
+		 * Carrega informações da banda no banco de dados para preencher o objeto
+		 * @param array dados do usuário para procurar na tabela
+		 */
+		public function carregaInformacao($dados) {
+			$this->setDados(parent::getCarregamento()->carregaDados($dados, TABELA_BANDAS));
 		}
 
 	    /**
@@ -88,26 +93,22 @@
 	     * @param array dados do usuário a ser definido
 	     */
 		private function setDados($dados) {
-			if(is_array($dados)){
-	            try {
-	            	$this->setId($dados['id']);
-	            	$this->setNome($dados['nome']);
-	            	$this->setEmail($dados['email']);
-	            	$this->setEstilo($dados['estilo']);
-	            	$this->setCidade($dados['cidade']);
-	            	$this->setDataCadastro($dados['data']);
-	            	//$this->setEventos($this->carregaEventos($this->getId()));
-	            	//$this->setFans($this->carregaFans($this->getId()));
-	            	//$this->setIntegrantes($this->carregaIntegrantes($this->getId()));
+			TratamentoErros::validaArray($dados, "dados da banda");
+            try {
+            	$this->setId($dados['id']);
+            	$this->setNome($dados['nome']);
+            	$this->setEmail($dados['email']);
+            	$this->setEstilo($dados['estilo']);
+            	$this->setCidade($dados['cidade']);
+            	$this->setDataCadastro($dados['data']);
+            	//$this->setEventos($this->carregaEventos($this->getId()));
+            	//$this->setFans($this->carregaFans($this->getId()));
+            	//$this->setIntegrantes($this->carregaIntegrantes($this->getId()));
 
-			    }
-			    catch(Exception $e) {
-			    	trigger_error($e->getMessage(), $e->getCode());
-			    }
-	        }
-	        else {
-	        	throw new InvalidArgumentException("Ocorreu um erro! Esperava receber um array. Recebeu ".gettype($dados).Utilidades::debugBacktrace(), E_USER_ERROR);
-	        }
+		    }
+		    catch(Exception $e) {
+		    	trigger_error($e->getMessage(), $e->getCode());
+		    }
 		}
 
 		/**
@@ -123,9 +124,7 @@
 				try {
 					$id = parent::insereDadosBancoDeDados($this->getDadosBanco(), TABELA_BANDAS);
 					$this->setId($id);
-					if(is_null($this->getId())) {
-						throw new Exception("Erro ao cadastrar banda! ".Utilidades::debugBacktrace(), E_USER_ERROR);
-					}
+					TratamentoErros::validaNulo($this->getId(), "id da banda");
 					$this->carregaDados(array('id' => $id));
 					$this->cadastraIntegrantes($this->getIntegrantes());
 				}
@@ -194,24 +193,20 @@
 		 */
 
 		public function cadastraIntegrantes($integrantes) {
-			if(!is_array($integrantes)) {
-				throw new InvalidArgumentException("Erro! Esperava array, recebeu ".gettype($integrantes).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else {
-				foreach($integrantes as $integrante) {
-					try {
-						$integrante['id_banda'] = $this->getId();
-						if(!Utilidades::valoresExistenteDB(array('id_banda' => $integrante['id_banda'], 'id_usuario' => $integrante['id_usuario'], 'funcao' => $integrante['funcao']), TABELA_INTEGRANTES_BANDA)) {
-							parent::insereDadosBancoDeDados($integrante, TABELA_INTEGRANTES_BANDA);
-						}
-						else {
-							throw new Exception("Erro ao cadastrar integrante! Já faz parte da banda nessa função!".Utilidades::debugBacktrace(), E_USER_ERROR);
-							
-						}
+			TratamentoErros::validaArray($integrantes, "integrantes da banda");
+			foreach($integrantes as $integrante) {
+				try {
+					$integrante['id_banda'] = $this->getId();
+					if(!parent::getCarregamento()->valoresExistenteDB(array('id_banda' => $integrante['id_banda'], 'id_usuario' => $integrante['id_usuario'], 'funcao' => $integrante['funcao']), TABELA_INTEGRANTES_BANDA)) {
+						parent::getCadatro()->insereDadosBancoDeDados($integrante, TABELA_INTEGRANTES_BANDA);
 					}
-					catch(Exception $e){
-						trigger_error("Erro! Não foi possível cadastrar integrante!".Utilidades::debugBacktrace().$e->getMessage(), E_USER_ERROR);
+					else {
+						throw new Exception("Erro ao cadastrar integrante! Já faz parte da banda nessa função!".Utilidades::debugBacktrace(), E_USER_ERROR);
+						
 					}
+				}
+				catch(Exception $e){
+					trigger_error("Erro! Não foi possível cadastrar integrante!".Utilidades::debugBacktrace().$e->getMessage(), E_USER_ERROR);
 				}
 			}
 		}
@@ -222,21 +217,11 @@
 	     */
 
 		private function validaDados() {
-			if(is_null($this->getNome())) {
-				throw new InvalidArgumentException("Erro! Nome inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getEmail())) {
-				throw new InvalidArgumentException("Erro! Email inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getEstilo())) {
-				throw new InvalidArgumentException("Erro! Estilo inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getCidade())) {
-				throw new InvalidArgumentException("Erro! Cidade inválida!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getDataCadastro())) {
-				throw new InvalidArgumentException("Erro! Data de cadastro inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
+			TratamentoErros::validaNulo($this->getNome(), "nome da banda");
+			TratamentoErros::validaNulo($this->getEmail(), "email da banda");
+			TratamentoErros::validaNulo($this->getEstilo(), "estilo da banda");
+			TratamentoErros::validaNulo($this->getCidade(), "cidade da banda");
+			TratamentoErros::validaNulo($this->getDataCadastro(), "data de cadastro da banda");
 		}
 
 	    /**
@@ -245,8 +230,8 @@
 	     * @return array dados das bandas
 	     */
 		public function getBandasUsuario($id) {
-			$this->validaId($id);
-			if(Utilidades::valoresExistenteDB(array('id' => $id), TABELA_USUARIOS)) {
+			TratamentoErros::validaInteiro($id, "id da banda");
+			if(parent::getCarregamento()->valoresExistenteDB(array('id' => $id), TABELA_USUARIOS)) {
 				$query = new MysqliDb;
 				$query->where("id_usuario", $id);
 				$bandas = $query->get(TABELA_INTEGRANTES_BANDA);
@@ -265,20 +250,9 @@
 		 * @param int id da banda
 		 */
 		public function setId($id) {
-			$this->validaId($id);
+			TratamentoErros::validaInteiro($id, "id da banda");
+			TratamentoErros::validaNulo($id, "id da banda");
 			$this->id = $id;
-		}
-
-		/**
-		 * Valida o id da banda
-		 */
-		private function validaId($id) {
-			if(!is_int($id)) {
-				throw new InvalidArgumentException("Erro ao definir id da banda. Esperava um inteiro, recebeu um ".gettype($id).Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else if(is_null($id)) {
-				throw new InvalidArgumentException("Erro ao definir id da banda. Inteiro nulo!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
 		}
 
 		/**
@@ -294,20 +268,9 @@
 		 * @param string nome da banda
 		 */
 		public function setNome($nome) {
-			$this->validaNome($nome);
+			TratamentoErros::validaString($nome, "nome da banda");
+			TratamentoErros::validaNulo($nome, "nome da banda");
 			$this->nome = $nome;
-		}
-
-		/**
-		 * Valida o nome da banda
-		 */
-		private function validaNome($nome) {
-			if(!is_string($nome)) {
-				throw new InvalidArgumentException("Erro ao definir nome da banda. Esperava uma string, recebeu um ".gettype($nome).Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else if(is_null($nome)) {
-				throw new InvalidArgumentException("Erro ao definir nome da banda. String nula!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
 		}
 
 		/**
@@ -323,20 +286,9 @@
 		 * @param string email da banda
 		 */
 		public function setEmail($email) {
-			$this->validaEmail($email);
+			TratamentoErros::validaString($email, "email da banda");
+			TratamentoErros::validaNulo($email, "email da banda");
 			$this->email = $email;
-		}
-
-		/**
-		 * Valida o email da banda
-		 */
-		private function validaEmail($email) {
-			if(!is_string($email)) {
-				throw new InvalidArgumentException("Erro ao definir email da banda. Esperava uma string, recebeu um ".gettype($email).Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else if(is_null($email)) {
-				throw new InvalidArgumentException("Erro ao definir email da banda. String nula!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
 		}
 
 		/**
@@ -352,20 +304,9 @@
 		 * @param string estilo da banda
 		 */
 		public function setEstilo($estilo) {
-			$this->validaEstilo($estilo);
+			TratamentoErros::validaString($estilo, "estilo da banda");
+			TratamentoErros::validaNulo($estilo, "estilo da banda");
 			$this->estilo = $estilo;
-		}
-
-		/**
-		 * Valida o estilo da banda
-		 */
-		private function validaEstilo($estilo) {
-			if(!is_string($estilo)) {
-				throw new InvalidArgumentException("Erro ao definir estilo da banda. Esperava uma string, recebeu um ".gettype($estilo).Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else if(is_null($estilo)) {
-				throw new InvalidArgumentException("Erro ao definir estilo da banda. String nula!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
 		}
 
 		/**
@@ -381,20 +322,9 @@
 		 * @param string cidade da banda
 		 */
 		public function setCidade($cidade) {
-			$this->validaCidade($cidade);
+			TratamentoErros::validaString($cidade, "cidade da banda");
+			TratamentoErros::validaNulo($cidade, "cidade da banda");
 			$this->cidade = $cidade;
-		}
-
-		/**
-		 * Valida o estilo da banda
-		 */
-		private function validaCidade($cidade) {
-			if(!is_string($cidade)) {
-				throw new InvalidArgumentException("Erro ao definir cidade da banda. Esperava uma string, recebeu um ".gettype($cidade).Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else if(is_null($cidade)) {
-				throw new InvalidArgumentException("Erro ao definir cidade da banda. String nula!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
 		}
 
 		/**
@@ -410,20 +340,9 @@
 		 * @param array eventos da banda
 		 */
 		public function setEventos($eventos) {
-			$this->validaEventos($eventos);
+			TratamentoErros::validaArray($eventos, "eventos da banda");
+			TratamentoErros::validaNulo($eventos, "eventos da banda");
 			$this->eventos = $eventos;
-		}
-
-		/**
-		 * Valida o estilo da banda
-		 */
-		private function validaEventos($eventos) {
-			if(!is_array($eventos)) {
-				throw new InvalidArgumentException("Erro ao definir eventos da banda. Esperava um array, recebeu um ".gettype($eventos).Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else if(is_null($eventos)) {
-				throw new InvalidArgumentException("Erro ao definir eventos da banda. Array nulo!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
 		}
 
 		/**
@@ -439,20 +358,9 @@
 		 * @param array fãs da banda
 		 */
 		public function setFans($fans) {
-			$this->validaFans($fans);
+			TratamentoErros::validaArray($fans, "fans da banda");
+			TratamentoErros::validaNulo($fans, "fans da banda");
 			$this->fans = $fans;
-		}
-
-		/**
-		 * Valida os fãs da banda
-		 */
-		private function validaFans($fans) {
-			if(!is_array($fans)) {
-				throw new InvalidArgumentException("Erro ao definir fãs da banda. Esperava um array, recebeu um ".gettype($fans).Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else if(is_null($fans)) {
-				throw new InvalidArgumentException("Erro ao definir fãs da banda. Array nulo!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
 		}
 
 		/**
@@ -468,20 +376,9 @@
 		 * @param array integrantes da banda
 		 */
 		public function setIntegrantes($integrantes) {
-			$this->validaIntegrantes($integrantes);
+			TratamentoErros::validaArray($integrantes, "integrantes da banda");
+			TratamentoErros::validaNulo($integrantes, "integrantes da banda");
 			$this->integrantes = $integrantes;
-		}
-
-		/**
-		 * Valida os integrantes da banda
-		 */
-		private function validaIntegrantes($integrantes) {
-			if(!is_array($integrantes)) {
-				throw new InvalidArgumentException("Erro ao definir integrantes da banda. Esperava um array, recebeu um ".gettype($integrantes).Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
-			else if(is_null($integrantes)) {
-				throw new InvalidArgumentException("Erro ao definir integrantes da banda. Array nulo!".Utilidades::debugBacktrace(), E_USER_ERROR);				
-			}
 		}
 
 		/**
@@ -497,21 +394,9 @@
 	     * @param string data de cadastro da banda a ser definido
 	     */
 		public function setDataCadastro($dataCadastro) {
-			$this->validaDataCadastro($dataCadastro);
+			TratamentoErros::validaString($dataCadastro, "data de cadastro da banda");
+			TratamentoErros::validaNulo($dataCadastro, "data de cadastro da banda");
 			$this->dataCadastro = $dataCadastro;
-		}
-
-		/**
-		 * Valida a data de cadastro banda
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaDataCadastro($dataCadastro) {
-			if(!is_string($dataCadastro)) {
-				throw new InvalidArgumentException("Erro ao definir a data de cadastro da banda. Esperava uma string, recebeu ".gettype($dataCadastro).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(is_null($dataCadastro)) {
-				throw new InvalidArgumentException("Erro ao definir o status da banda. Inteiro nulo".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 	    /**

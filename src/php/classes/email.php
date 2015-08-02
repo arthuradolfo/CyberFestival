@@ -49,13 +49,9 @@
 		 */
 
 		public function setTitulo($titulo) {
-			if(!is_string($titulo) || is_null($titulo)) {
-				throw new Exception("Erro ao criar titulo para email! Esperava receber string não nula! Recebeu ".gettype($titulo).Utilidaes::debugBacktrace(), E_USER_ERROR);
-				
-			}
-			else {
-	        	$this->Subject = $titulo; 
-	        }
+			TratamentoErros::validaString($titulo, "titulo do email");
+			TratamentoErros::validaNulo($titulo, "titulo do email");
+	        $this->Subject = $titulo; 
 		}
 
 		/**
@@ -72,13 +68,9 @@
 		 */
 
 		public function setMensagem($mensagem) {
-			if(!is_string($mensagem) || is_null($mensagem)) {
-				throw new Exception("Erro ao criar mensagem para email! Esperava receber string não nula! Recebeu ".gettype($mensagem).Utilidaes::debugBacktrace(), E_USER_ERROR);
-				
-			}
-			else {
-	        	$this->Body = $mensagem; 
-	        }
+			TratamentoErros::validaString($mensagem, "mensagem do email");
+			TratamentoErros::validaNulo($mensagem, "mensagem do email");
+	        $this->Body = $mensagem;
 		}
 
 		/**
@@ -95,13 +87,9 @@
 		 */
 
 		public function setAnexo($anexo) {
-			if(!is_string($anexo) || is_null($anexo)) {
-				throw new Exception("Erro ao criar anexo para email! Esperava receber string não nula! Recebeu ".gettype($anexo).Utilidaes::debugBacktrace(), E_USER_ERROR);
-				
-			}
-			else {
-	        	$this->AddAttachment($anexo); 
-	        }
+			TratamentoErros::validaString($anexo, "anexo do email");
+			TratamentoErros::validaNulo($anexo, "anexo do email");
+	        $this->AddAttachment($anexo); 
 		}
 
 		/**
@@ -111,17 +99,11 @@
 		 */
 
 		public function setDestinatario($email, $nome) {
-			if(!is_string($email) || is_null($email)) {
-				throw new Exception("Erro ao definir email do destinatário! Esperava receber string não nula! Recebeu ".gettype($email).Utilidaes::debugBacktrace(), E_USER_ERROR);
-				
-			}
-			else if(!is_string($nome) || is_null($nome)) {
-				throw new Exception("Erro ao definir nome do destinatário! Esperava receber string não nula! Recebeu ".gettype($nome).Utilidaes::debugBacktrace(), E_USER_ERROR);
-				
-			}
-			else {
-	       		$this->AddAddress($email, $nome); 
-	       	}
+			TratamentoErros::validaString($email, "destinatario do email");
+			TratamentoErros::validaNulo($email, "destinatario do email");
+			TratamentoErros::validaString($nome, "nome do destinatario do email");
+			TratamentoErros::validaNulo($nome, "nome do destinatario do email");
+	       	$this->AddAddress($email, $nome);
 		}
 
 		/**
@@ -131,17 +113,11 @@
 		 */
 
 		public function setCopia($email, $nome) {
-			if(!is_string($email) || is_null($email)) {
-				throw new Exception("Erro ao definir email do destinatário! Esperava receber string não nula! Recebeu ".gettype($email).Utilidaes::debugBacktrace(), E_USER_ERROR);
-				
-			}
-			else if(!is_string($nome) || is_null($nome)) {
-				throw new Exception("Erro ao definir nome do destinatário! Esperava receber string não nula! Recebeu ".gettype($nome).Utilidaes::debugBacktrace(), E_USER_ERROR);
-				
-			}
-			else {
-	        	$this->AddCC($email, $nome); 
-	        }
+			TratamentoErros::validaString($email, "destinatario do email");
+			TratamentoErros::validaNulo($email, "destinatario do email");
+			TratamentoErros::validaString($nome, "nome do destinatario do email");
+			TratamentoErros::validaNulo($nome, "nome do destinatario do email");
+	        $this->AddCC($email, $nome);
 		}
 
 		/**
@@ -151,17 +127,11 @@
 		 */
 
 		public function setCopiaOculta($email, $nome) {
-			if(!is_string($email) || is_null($email)) {
-				throw new Exception("Erro ao definir email do destinatário! Esperava receber string não nula! Recebeu ".gettype($email).Utilidaes::debugBacktrace(), E_USER_ERROR);
-				
-			}
-			else if(!is_string($nome) || is_null($nome)) {
-				throw new Exception("Erro ao definir nome do destinatário! Esperava receber string não nula! Recebeu ".gettype($nome).Utilidaes::debugBacktrace(), E_USER_ERROR);
-				
-			}
-			else {
-	        	$this->AddBCC($email, $nome); 
-	        }
+			TratamentoErros::validaString($email, "destinatario do email");
+			TratamentoErros::validaNulo($email, "destinatario do email");
+			TratamentoErros::validaString($nome, "nome do destinatario do email");
+			TratamentoErros::validaNulo($nome, "nome do destinatario do email");
+	        $this->AddBCC($email, $nome);
 		}
 
 		/**

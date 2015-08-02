@@ -1,0 +1,52 @@
+<?php
+	/**
+	 * Classe que contem tratamentos de erros e exceptions
+	 *
+	 * @category Tratamento de erros
+	 * @package  Erros
+	 * @author Arthur Adolfo <arthur_adolfo@hotmail.com>
+	 * @version 1.0
+	 * @copyright CyberFestival 2015
+	 */
+	class TratamentoErros {
+		/**
+		 * Valida variáveis do tipo inteiro
+		 * @throws InvalidArgumentException se não for inteiro
+		 */
+		static public function validaInteiro($variavel, $descricao = "variavel") {
+			if(!is_int($variavel)) {
+				throw new InvalidArgumentException("Erro ao definir ".$descricao.". Esperava um inteiro, recebeu ".gettype($variavel).Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
+		}
+
+		/**
+		 * Valida variáveis do tipo string
+		 * @throws InvalidArgumentException se não for string
+		 */
+		static public function validaString($variavel, $descricao = "variavel") {
+			if(!is_string($variavel)) {
+				throw new InvalidArgumentException("Erro ao definir ".$descricao.". Esperava uma string, recebeu ".gettype($variavel).Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
+		}
+
+		/**
+		 * Valida variáveis do tipo array
+		 * @throws InvalidArgumentException se não for array
+		 */
+		static public function validaArray($variavel, $descricao = "variavel") {
+			if(!is_array($variavel)) {
+				throw new InvalidArgumentException("Erro ao definir ".$descricao.". Esperava um array, recebeu ".gettype($variavel).Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
+		}
+
+		/**
+		 * Verifica se variavel é nula
+		 * @throws InvalidArgumentException se for nulo
+		 */
+		static public function validaNulo($variavel) {
+			if(is_null($variavel)) {
+				throw new InvalidArgumentException("Erro. ".gettype($variavel)." nulo(a)".Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
+		}
+	}
+?>

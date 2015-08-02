@@ -9,7 +9,7 @@
 	 * @copyright CyberFestival 2015
 	 */
 
-	class Usuario extends Cadastro implements AcoesCadastroCarregamento {
+	class Usuario extends AcoesDBUsuario implements AcoesCadastroCarregamento {
 		/**
 		 * ID do usuário no banco de dados 
 		 * Caso o usuário exista seu id será diferente de NULO
@@ -91,19 +91,24 @@
 		 * @throws InvalidArgumentException Uso de arguimentos inválidos
 		 */
 		public function __construct($id = NULL) {
+			parent::__construct();
 			if(!is_null($id)) {
-				if(!is_int($id)) {
-					throw new InvalidArgumentException("Erro ao definir o id do usuário. Esperava um inteiro, recebeu ".gettype($id).Utilidades::debugBacktrace(), E_USER_ERROR);
+				TratamentoErros::validaInteiro($id, "id do usuário");
+				if(parent::getCarregamento()->valoresExistenteDB(array('id' => $id), TABELA_USUARIOS)) {
+					$this->carregaInformacao(array('id' => $id));
 				}
-				else {
-					if(Utilidades::valoresExistenteDB(array('id' => $id), TABELA_USUARIOS)) {
-						Utilidades::carregaDados(array('id' => $id), TABELA_USUARIOS);
-					}
-					else {	
-						throw new InvalidArgumentException("Id não existe no banco de dados.".Utilidades::debugBacktrace(), E_USER_ERROR);
-					}
+				else {	
+					throw new InvalidArgumentException("Id não existe no banco de dados.".Utilidades::debugBacktrace(), E_USER_ERROR);
 				}
 			}
+		}
+
+		/**
+		 * Carrega informações do usuário no banco de dados para preencher o objeto
+		 * @param array dados do usuário para procurar na tabela
+		 */
+		public function carregaInformacao($dados) {
+			$this->setDados(parent::getCarregamento()->carregaDados($dados, TABELA_USUARIOS));
 		}
 
 	    /**
@@ -111,34 +116,30 @@
 	     * @param array dados do usuário a ser definido
 	     * @throws InvalidArgumentException Uso de argumentos inválidos
 	     */
-		private function setDados($dados) {
-			if(is_array($dados)){
-	            try {
-	            	$this->setId($dados['id']);
-			        $this->setNome($dados['nome']);
-			        $this->setNacionalidade($dados['nacionalidade']);
-			        $this->setEmail($dados['email']);
-			        $this->setSenhaHash($dados['senha'], false);
-			        $this->setTipo($dados['tipo']);
-			        $this->setEstilo($dados['estilo']);
-			        $this->setStatus($dados['status']);
-			        $this->setDataCadastro($dados['data']);
-			        $this->setFotoPerfil($this->carregaFotoPerfil($this->getId()));
-			        //$this->setInteresseMusical($this->carregaInteresseMusical($this->getId()));
-			        if($this->isArtistUser()) {
-			        	//$this->setInstrumentos($this->carregaInstrumentos($this->getId()));
-			        }
-			        if($this->isArtistUser()) {
-			        	//$this->setBandas($this->carregaBandas($this->getId()));
-			        }
-			    }
-			    catch(Exception $e) {
-			    	trigger_error($e->getMessage(), $e->getCode());
-			    }
-	        }
-	        else {
-	        	throw new InvalidArgumentException("Ocorreu um erro! Esperava receber um array. Recebeu ".gettype($dados).Utilidades::debugBacktrace(), E_USER_ERROR);
-	        }
+		public function setDados($dados) {
+			TratamentoErros::validaArray($dados, "informações do usuário");
+            try {
+            	$this->setId($dados['id']);
+		        $this->setNome($dados['nome']);
+		        $this->setNacionalidade($dados['nacionalidade']);
+		        $this->setEmail($dados['email']);
+		        $this->setSenhaHash($dados['senha'], false);
+		        $this->setTipo($dados['tipo']);
+		        $this->setEstilo($dados['estilo']);
+		        $this->setStatus($dados['status']);
+		        $this->setDataCadastro($dados['data']);
+		        $this->setFotoPerfil($this->carregaFotoPerfil($this->getId()));
+		        //$this->setInteresseMusical($this->carregaInteresseMusical($this->getId()));
+		        if($this->isArtistUser()) {
+		        	//$this->setInstrumentos($this->carregaInstrumentos($this->getId()));
+		        }
+		        if($this->isArtistUser()) {
+		        	//$this->setBandas($this->carregaBandas($this->getId()));
+		        }
+		    }
+		    catch(Exception $e) {
+		    	trigger_error($e->getMessage(), $e->getCode());
+		    }
 		}
 
 		/**
@@ -147,23 +148,20 @@
 		 * Se não for nulo, atualiza banco de dados
 	     * @throws Exception Ocorreu erro
 		 */
-
 		public function salvaDados() {
 			$this->validaDados();
 			if(is_null($this->getId())) {
 				try {
-					$id = parent::insereDadosBancoDeDados($this->getDadosBanco(), TABELA_USUARIOS);
-					$this->setId($id);
-					if(is_null($this->getId())) {
-						throw new Exception("Erro ao cadastrar usuário! ".Utilidades::debugBacktrace(), E_USER_ERROR);
-					}
-					$this->carregaDados(array('id' => $id));
+					$id = parent::getCadastro()->insereDadosBancoDeDados($this->getDadosBanco(), TABELA_USUARIOS);
+					$this->setId($id); //Carrega o id fornecido ao usuário no cadastramento
+					TratamentoErros::validaNulo($this->getId(), "id do usuário");
+					//Carrega os dados para enviar email de confirmação
 					$dados = array( "id" => $id,
 									"nome" => $this->getNome(),
 									"email" => $this->getEmail()
 									);
-					parent::enviaEmailConfirmacao($dados);
-					$this->carregaDados(array('id' => $id));
+					parent::getCadastro()->enviaEmailConfirmacao($dados);
+					$this->carregaInformacao(array('id' => $id)); //Carrega o codigo de verificação no objeto
 				}
 				catch(Exception $e) {
 					trigger_error("Ocorreu um erro ao tentar salvar dados do usuário no DB! ".$e->getMessage().Utilidades::debugBacktrace(), E_USER_ERROR);
@@ -171,7 +169,7 @@
 			}
 			else {
 				try {
-					parent::atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_USUARIOS);
+					parent::getCadastro()->atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_USUARIOS);
 				}
 				catch(Exception $e) {
 					trigger_error("Ocorreu um erro ao tentar salvar dados do usuário no DB! ".$e->getMessage().Utildiades::debugBacktrace(), $e->getCode());
@@ -234,32 +232,16 @@
 	     * Valida dados do usuário
 	     * @throws Exception caso ocorra erro
 	     */
-
-		private function validaDados() {
-			if(is_null($this->getNome())) {
-				throw new InvalidArgumentException("Erro! Nome inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getNacionalidade())) {
-				throw new InvalidArgumentException("Erro! Nacionalidade inválida!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getEmail())) {
-				throw new InvalidArgumentException("Erro! Email inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getSenhaHash())) {
-				throw new InvalidArgumentException("Erro! Senha Hash inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getTipo())) {
-				throw new InvalidArgumentException("Erro! Tipo inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getEstilo())) {
-				throw new InvalidArgumentException("Erro! Estilo inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getStatus())) {
-				throw new InvalidArgumentException("Erro! Status inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getDataCadastro())) {
-				throw new InvalidArgumentException("Erro! Data de cadastro inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
+		public function validaDados() {
+			TratamentoErros::validaNulo($this->getNome(), "nome do usuário");
+			TratamentoErros::validaNulo($this->getNacionalidade(), "nacionalidade do usuário");
+			TratamentoErros::validaNulo($this->getNome(), "nome do usuário");
+			TratamentoErros::validaNulo($this->getEmail(), "email do usuário");
+			TratamentoErros::validaNulo($this->getSenhaHash(), "senha hash do usuário");
+			TratamentoErros::validaNulo($this->getTipo(), "tipo do usuário");
+			TratamentoErros::validaNulo($this->getEstilo(), "estilo do usuário");
+			TratamentoErros::validaNulo($this->getStatus(), "status do usuário");
+			TratamentoErros::validaNulo($this->getDataCadastro(), "data de cadastro do usuário");
 		}
 
 		/**
@@ -267,8 +249,8 @@
 		 * @param int id do usuário
 		 */
 		public function carregaUsuarioPorId($id) {
-			$this->validaId($id);
-			$this->carregaDados(array("id" => $id));
+			TratamentoErros::validaInteiro($id, "id do usuário");
+			$this->carregaInformacao(array('id' => $id));
 		}
 
 		/**
@@ -276,8 +258,8 @@
 		 * @param string nome do usuário
 		 */
 		public function carregaUsuarioPorNome($nome) {
-			$this->validaNome($nome);
-			$this->carregaDados(array("nome" => $nome));
+			TratamentoErros::validaString($nome, "nome do usuário");
+			$this->carregaInformacao(array('nome' => $nome));
 		}
 
 		/**
@@ -285,8 +267,8 @@
 		 * @param string email do usuário
 		 */
 		public function carregaUsuarioPorEmail($email) {
-			$this->validaEmail($email);
-			$this->carregaDados(array("email" => $email));
+			TratamentoErros::validaString($email, "email do usuário");
+			$this->carregaInformacao(array('email' => $email));
 		}
 
 		/**
@@ -297,13 +279,9 @@
 	     */
 
 		private function carregaFotoPerfil($id) {
-			if(!is_int($id)) {
-				throw new InvalidArgumentException("Erro, Espera receber um inteiro, recebeu ". gettype($id).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else {
-				$fotoPerfil = new FotoPerfil($this->getId());
-				return $fotoPerfil->getDados();
-			}
+			TratamentoErros::validaInteiro($id, "id do usuário");
+			$fotoPerfil = new FotoPerfil($this->getId());
+			return $fotoPerfil->getDados();
 		}
 
 		public function uploadFotoPerfil($arquivo) {
@@ -329,13 +307,9 @@
 	     */
 
 		private function carregaInteresseMusical($id) {
-			if(!is_int($id)) {
-				throw new InvalidArgumentException("Erro, Espera receber um inteiro, recebeu ". gettype($id).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else {
-				$interesseMusical = new InteresseMusical($this->getId());
-				return $interesseMusical->getInteresseMuscial();
-			}
+			TratamentoErros::validaInteiro($id, "id do usuário");
+			$interesseMusical = new InteresseMusical($this->getId());
+			return $interesseMusical->getInteresseMuscial();
 		}
 
 
@@ -347,13 +321,9 @@
 	     */
 
 		private function carregaInstrumentos($id) {
-			if(!is_int($id)) {
-				throw new InvalidArgumentException("Erro, Espera receber um inteiro, recebeu ". gettype($id).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else {
-				$instrumentos = new Instrumentos($this->getId());
-				return $instrumentos->getInstrumentos();
-			}
+			TratamentoErros::validaInteiro($id, "id do usuário");
+			$instrumentos = new Instrumentos($this->getId());
+			return $instrumentos->getInstrumentos();
 		}
 
 		/**
@@ -364,13 +334,9 @@
 	     */
 
 		private function carregaBandas($id) {
-			if(!is_int($id)) {
-				throw new InvalidArgumentException("Erro, Espera receber um inteiro, recebeu ". gettype($id).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else {
-				$bandas = new Banda;
-				return $bandas->getBandasUsuario();
-			}
+			TratamentoErros::validaInteiro($id, "id do usuário");
+			$bandas = new Banda;
+			return $bandas->getBandasUsuario();
 		}
 
 		/**
@@ -434,18 +400,8 @@
 	     * @param int id do usuário a ser definido
 	     */
 		public function setId($id) {
-			$this->validaId($id);
+			TratamentoErros::validaInteiro($id, "id do usuário");
 			$this->id = $id;
-		}
-
-		/**
-		 * Valida o id do usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaId($id) {
-			if(!is_int($id)) {
-				throw new InvalidArgumentException("Erro ao definir o id do usuário. Esperava um inteiro, recebeu ".gettype($id).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 		/**
@@ -461,21 +417,9 @@
 	     * @param string nome do usuário a ser definido
 	     */
 		public function setNome($nome) {
-			$this->validaNome($nome);
+			TratamentoErros::validaString($nome, "nome do usuário");
+			TratamentoErros::validaNulo($nome);
 			$this->nome = $nome;
-		}
-
-		/**
-		 * Valida o nome do usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaNome($nome) {
-			if(!is_string($nome)) {
-				throw new InvalidArgumentException("Erro ao definir o nome do usuário. Esperava uma string, recebeu ".gettype($nome).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(is_null($nome)) {
-				throw new InvalidArgumentException("Erro ao definir nome do usuário. String nula.".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 	    /**
@@ -492,10 +436,11 @@
 	     * @param string email do usuário a ser definido
 	     */
 		public function setEmail($email, $troca = false) {
-			$this->validaEmail($email);
+			TratamentoErros::validaString($email, "email do usuário");
+			TratamentoErros::validaNulo($email);
 			//Se estiver trocando o email
 			if($troca) {
-	            if(Utilidades::valoresExistenteDB(array('email' => $email), TABELA_USUARIOS)){
+	            if(parent::getCarregamento()->valoresExistenteDB(array('email' => $email), TABELA_USUARIOS)){
 	                throw new Exception("Esse email já está em uso!".Utilidades::debugBacktrace(), E_USER_WARNING);
 	            }
 			}
@@ -504,19 +449,6 @@
 			}
 			else {
 	             throw new Exception("Esse email é inválido!".Utilidades::debugBacktrace(), E_USER_WARNING);
-			}
-		}
-
-		/**
-		 * Valida o email do usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaEmail($email) {
-			if(!is_string($email)) {
-				throw new InvalidArgumentException("Erro ao definir o email do usuário. Esperava uma string, recebeu ".gettype($email).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(is_null($email)) {
-				throw new InvalidArgumentException("Erro ao definir email do usuário. String nula.".Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
 		}
 
@@ -534,21 +466,9 @@
 	     * @param string nacionalidade do usuário a ser definido
 	     */
 		public function setNacionalidade($nacionalidade) {
-			$this->validaNacionalidade($nacionalidade);
+			TratamentoErros::validaString($nacionalidade, "nacionalidade do usuário");
+			TratamentoErros::validaNulo($nacionalidade);
 			$this->nacionalidade = $nacionalidade;
-		}
-
-		/**
-		 * Valida a nacionalidade do usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaNacionalidade($nacionalidade) {
-			if(!is_string($nacionalidade)) {
-				throw new InvalidArgumentException("Erro ao definir a nacionalidade do usuário. Esperava uma string, recebeu ".gettype($nacionalidade).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(is_null($nacionalidade)) {
-				throw new InvalidArgumentException("Erro ao definir a nacionalidade do usuário. String nula.".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 	    /**
@@ -564,21 +484,9 @@
 	     * @param int tipo do usuário a ser definido
 	     */
 		public function setTipo($tipo) {
-			$this->validaTipo($tipo);
+			TratamentoErros::validaInteiro($tipo, "tipo do usuário");
+			TratamentoErros::validaNulo($tipo);
 			$this->tipo = $tipo;
-		}
-
-		/**
-		 * Valida o tipo do usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaTipo($tipo) {
-			if(!is_int($tipo)) {
-				throw new InvalidArgumentException("Erro ao definir o tipo do usuário. Esperava um inteiro, recebeu ".gettype($tipo).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(is_null($tipo)) {
-				throw new InvalidArgumentException("Erro ao definir tipo do usuário. Inteiro nulo.".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 	    /**
@@ -594,7 +502,9 @@
 	     * @param string hash da senha ou senha do usuário a ser definido
 	     */
 		public function setSenhaHash($senha, $hash = true) {
-			$this->validaSenha($senha);
+			TratamentoErros::validaString($senha, "senha do usuário");
+			TratamentoErros::validaNulo($senha);
+			$this->validaTamanhoSenha($senha);
 			$this->senhaHash = ($hash) ? Utilidades::geraHashSenha($senha) : $senha;
 		}
 
@@ -602,16 +512,9 @@
 		 * Valida a senha do usuário
 	     * @throws InvalidArgumentException Uso de argumentos inválidos
 		 */
-		private function validaSenha($senha) {
-			if(!is_string($senha)) {
-				throw new InvalidArgumentException("Erro ao definir a hash da senha do usuário. Esperava uma string, recebeu ".gettype($senha).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(is_null($senha)) {
-				throw new InvalidArgumentException("Erro ao definir a hash da senha do usuário. String nula".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if($this->senhaTamanhoInvalido($senha)) {
+		private function validaTamanhoSenha($senha) {
+			if($this->senhaTamanhoInvalido($senha)) {
 				throw new InvalidArgumentException("Erro ao definir a hash da senha do usuário. Senha muito pequena".Utilidades::debugBacktrace(), E_USER_ERROR);
-			
 			}
 		}
 
@@ -642,21 +545,9 @@
 	     * @param array informarções foto de perfil
 	     */
 		public function setFotoPerfil($fotoPerfil) {
-			$this->validaFotoPerfil($fotoPerfil);
+			TratamentoErros::validaArray($fotoPerfil, "foto de perfil do usuário");
+			TratamentoErros::validaNulo($fotoPerfil);
 			$this->fotoPerfil = $fotoPerfil;
-		}
-
-		/**
-		 * Valida a foto de perfil do usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaFotoPerfil($fotoPerfil) {
-			if(!is_array($fotoPerfil)) {
-				throw new InvalidArgumentException("Erro ao definir a foto de perfil do usuário. Esperava um array, recebeu ".gettype($fotoPerfil).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(is_null($fotoPerfil)) {
-				throw new InvalidArgumentException("Erro ao definir a foto de perfil do usuário. String nula".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 	    /**
@@ -672,21 +563,9 @@
 	     * @param string estilo principal do usuário a ser definido
 	     */
 		public function setEstilo($estilo) {
-			$this->validaEstilo($estilo);
+			TratamentoErros::validaString($estilo, "estilo do usuário");
+			TratamentoErros::validaNulo($estilo);
 			$this->estilo = $estilo;
-		}
-
-		/**
-		 * Valida o estilo do usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaEstilo($estilo) {
-			if(!is_string($estilo)) {
-				throw new InvalidArgumentException("Erro ao definir o estilo de perfil do usuário. Esperava uma string, recebeu ".gettype($estilo).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(is_null($estilo)) {
-				throw new InvalidArgumentException("Erro ao definir o estilo de perfil do usuário. String nula".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 	    /**
@@ -702,21 +581,9 @@
 	     * @param int status do usuário a ser definido
 	     */
 		public function setStatus($status) {
-			$this->validaStatus($status);
+			TratamentoErros::validaInteiro($status, "status do usuário");
+			TratamentoErros::validaNulo($status);
 			$this->status = $status;
-		}
-
-		/**
-		 * Valida o status do usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaStatus($status) {
-			if(!is_int($status)) {
-				throw new InvalidArgumentException("Erro ao definir o status do usuário. Esperava um inteiro, recebeu ".gettype($status).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(is_null($status)) {
-				throw new InvalidArgumentException("Erro ao definir o status do usuário. Inteiro nulo".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 	    /**
@@ -732,21 +599,9 @@
 	     * @param string data de cadastro do usuário a ser definido
 	     */
 		public function setDataCadastro($dataCadastro) {
-			$this->validaDataCadastro($dataCadastro);
+			TratamentoErros::validaString($dataCadastro, "data de cadastro do usuário");
+			TratamentoErros::validaNulo($dataCadastro);
 			$this->dataCadastro = $dataCadastro;
-		}
-
-		/**
-		 * Valida a data de cadastro do usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaDataCadastro($dataCadastro) {
-			if(!is_string($dataCadastro)) {
-				throw new InvalidArgumentException("Erro ao definir a data de cadastro do usuário. Esperava uma string, recebeu ".gettype($dataCadastro).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(is_null($dataCadastro)) {
-				throw new InvalidArgumentException("Erro ao definir o status do usuário. Inteiro nulo".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 	    /**
@@ -762,24 +617,8 @@
 	     * @param array interesse musical do usuário a ser definido
 	     */
 		public function setInteresseMuscial($interesseMusical) {
-			$this->validaInteresseMusical($interesseMusical);
+			TratamentoErros::validaArray($interesseMusical, "interesse musical do usuário");
 			$this->interesseMusical = $interesseMusical;
-		}
-
-		/**
-		 * Valida o interesse musical do usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaInteresseMusical($interesseMusical) {
-			if(!is_array($interesseMusical)) {
-				throw new InvalidArgumentException("Erro ao definir o interesse musical do usuário. Esperava um array, recebeu ".gettype($interesseMusical).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(!is_string($interesseMusical)) {
-				throw new InvalidArgumentException("Erro ao definir o interesse musical do usuário. Esperava uma string, recebeu ".gettype($interesseMusical).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(is_null($interesseMusical)) {
-				throw new InvalidArgumentException("Erro ao definir o interesse musical do usuário. String nula".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 	    /**
@@ -795,26 +634,8 @@
 	     * @param array instrumentos tocados pelo usuário a ser definido
 	     */
 		public function setInstrumentos($instrumentos) {
-			$this->validaInstrumentos($instrumentos);
+			TratamentoErros::validaString($instrumentos, "instrumentos do usuário");
 			$this->instrumentos = $instrumentos;
-		}
-
-		/**
-		 * Valida instrumentos do usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaInstrumentos($instrumentos) {
-			if(!is_array($instrumentos)) {
-				throw new InvalidArgumentException("Erro ao definir os instrumentos do usuário. Esperava um array, recebeu ".gettype($instrumentos).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(!is_string($instrumentos)) {
-				throw new InvalidArgumentException("Erro ao definir os intrumentos do usuário. Esperava uma string, recebeu".gettype($instrumentos).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if($this->isArtistUser()) {
-				if(is_null($instrumentos)) {
-					throw new Exception("Erro ao definir os instrumentos do usuário. String nula.".Utilidades::debugBacktrace(), E_USER_ERROR);
-				}
-			}
 		}
 
 	    /**
@@ -830,24 +651,8 @@
 	     * @param array bandas tocadas pelo usuário a ser definido
 	     */
 		public function setBandas($bandas) {
-			$this->validaBandas($bandas);
+			TratamentoErros::validaArray($bandas, "bandas do usuário");
 			$this->bandas = $bandas;
-		}
-
-		/**
-		 * Valida as bandas do usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaBandas($bandas) {
-			if(!is_array($bandas)) {
-				throw new InvalidArgumentException("Erro ao definir as bandas do usuário. Esperava um array, recebeu ".gettype($instrumentos).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(!is_string($bandas)) {
-				throw new InvalidArgumentException("Erro ao definir as bandas do usuário. Esperava uma string, recebeu ".gettype($instrumentos).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(!$this->isArtistUser()) {
-				throw new Exception("Erro ao definir as bandas do usuário. Apenas artista pode ter banda.".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 	    /**
@@ -858,15 +663,4 @@
 			return $this->bandas;
 		}
 	}
-	//Apenas para testes, pode excluir se desnecessário.
-	/*$usuario = new Usuario;
-	$usuario->setNome("cristian");
-	$usuario->setEmail("arthur_adolfo@hotmail.com");
-	$usuario->setNacionalidade("Brasileiro");
-	$usuario->setTipo(1);
-	$usuario->setSenhaHash("030197999");
-	$usuario->setEstilo("rock");
-	$usuario->setStatus(1);
-	$usuario->setDataCadastro("25/07/2015");
-	$usuario->salvaDados();*/
 ?>

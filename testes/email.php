@@ -62,11 +62,17 @@
 		 */
 		private $mensagemErroEnviaEmailComCopiaOculta;
 
-		function __construct() {
-			$this->testaEnviaEmail();
-			$this->testaEnviaEmailComAnexo();
-			$this->testaEnviaEmailComCopia();
-			$this->testaEnviaEmailComCopiaOculta();
+		function __construct($arquivo) {
+			try {
+				$this->testaEnviaEmail();
+				$this->testaEnviaEmailComAnexo($arquivo);
+				$this->testaEnviaEmailComCopia();
+				$this->testaEnviaEmailComCopiaOculta();
+				$this->printaResultado();
+			}
+			catch(Exception $e) {
+				trigger_error("Erro ao testar classe!".$e->getMessage().Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
 		}
 
 		/**
@@ -82,7 +88,7 @@
 			}
 			catch(Exception $e) {
 				$this->setErroEnviaEmail(true);
-				$this->setMensagemErroEnviaEmail($e->getMessage());
+				$this->setMensagemErroEnviaEmail($e->getMessage().Utilidades::debugBacktrace());
 			}
 		}
 
@@ -99,8 +105,82 @@
 				$email->sendEmail();
 			}
 			catch(Exception $e) {
-				$this->setErroEnviaEmail(true);
-				$this->setMensagemErroEnviaEmail($e->getMessage());
+				$this->setErroEnviaEmailComAnexo(true);
+				$this->setMensagemErroEnviaEmailComAnexo($e->getMessage().Utilidades::debugBacktrace());
+			}
+		}
+
+		/**
+		 * Método que testa o envio de email com copia
+		 */
+		public function testaEnviaEmailComCopia() {
+			try {
+				$email = new Email;
+				$email->setTitulo("Email teste");
+				$email->setMensagem("Este email é só um teste!");
+				$email->setDestinatario("arthur_adolfo@hotmail.com","arthur");
+				$email->setCopia("arthur_adolfo@hotmail.com","arthur");
+				$email->sendEmail();
+			}
+			catch(Exception $e) {
+				$this->setErroEnviaEmailComCopia(true);
+				$this->setMensagemErroEnviaEmailComCopia($e->getMessage().Utilidades::debugBacktrace());
+			}
+		}
+
+		/**
+		 * Método que testa o envio de email com copia oculta
+		 */
+		public function testaEnviaEmailComCopiaOculta() {
+			try {
+				$email = new Email;
+				$email->setTitulo("Email teste");
+				$email->setMensagem("Este email é só um teste!");
+				$email->setDestinatario("arthur_adolfo@hotmail.com","arthur");
+				$email->setCopiaOculta("arthur_adolfo@hotmail.com","arthur");
+				$email->sendEmail();
+			}
+			catch(Exception $e) {
+				$this->setErroEnviaEmailComCopiaOculta(true);
+				$this->setMensagemErroEnviaEmailComCopiaOculta($e->getMessage().Utilidades::debugBacktrace());
+			}
+		}
+
+		/**
+		 * Printa resultado dos testes
+		 */
+
+		public function printaResultado() {
+			if($this->getErroEnviaEmail()) {
+				echo "Erro! Teste de envio de email falhou!<br>";
+				var_dump($this->getMensagemErroEnviaEmail);
+			}
+			else {
+				echo "Teste de envio de email bem sucedido!";
+			}
+
+			if($this->getErroEnviaEmailComAnexo()) {
+				echo "Erro! Teste de envio de email com anexo falhou!<br>";
+				var_dump($this->getMensagemErroEnviaEmailComAnexo);
+			}
+			else {
+				echo "Teste de envio de email com anexo bem sucedido!";
+			}
+
+			if($this->getErroEnviaEmailComCopia()) {
+				echo "Erro! Teste de envio de email com copia falhou!<br>";
+				var_dump($this->getMensagemErroEnviaEmailComCopia);
+			}
+			else {
+				echo "Teste de envio de email com copia bem sucedido!";
+			}
+
+			if($this->getErroEnviaEmailComCopiaOculta()) {
+				echo "Erro! Teste de envio de email com copia oculta falhou!<br>";
+				var_dump($this->getMensagemErroEnviaEmailComCopiaOculta);
+			}
+			else {
+				echo "Teste de envio de email com copia oculta bem sucedido!";
 			}
 		}
 
@@ -215,6 +295,9 @@
 		public function getMensagemErroEnviaEmailComCopiaOculta() {
 			return $this->mensagemErroEnviaEmailComCopiaOculta;
 		}
+	}
+	if($_FILES) {
+		$email = new Email($_FILES['arquivo']);
 	}
 ?>
 <form action="usuario.php" method="post">

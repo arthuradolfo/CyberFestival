@@ -5,7 +5,8 @@
 *
 * @category Configurações
 * @package  Utilidades
-* @author Arthur Adolfo & Bernardo Lignati <arthur_adolfo@hotmail.com> <bernardonlignati@hotmail.com>
+* @author Arthur Adolfo <arthur_adolfo@hotmail.com>
+* @author Bernardo Lignati <bernardonlignati@hotmail.com>
 * @version 1.0
 * @copyright CyberFestival
 */

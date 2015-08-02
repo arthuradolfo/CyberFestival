@@ -61,20 +61,25 @@
 	     * @throws Exception Erro ocorrido
 		 */
 		function __construct($idUsuario = NULL) {
+			parent::__construct();
 			if(!is_null($idUsuario)) {
 				parent::__construct(TIPO_ARQUIVO_FOTO_PERFIL);
-				if(!is_int($idUsuario)) {
-					throw new InvalidArgumentException("Erro. Id inválido. Esperava um inteiro, recebeu ".gettype($idUsuario).Utilidades::debugBacktrace(), E_USER_ERROR);
+				TratamentoErros::validaInteiro($idUsuario, "id do usuário da foto de perfil");
+				if(parent::getCarregamento()->valoresExistenteDB(array('id_usuario' => $idUsuario), TABELA_FOTOS_PERFIL)) {
+					$this->carregaInformacao(array('id' => $id));
 				}
 				else {
-					if(Utilidades::valoresExistenteDB(array('id_usuario' => $idUsuario), TABELA_FOTOS_PERFIL)) {
-						Utilidades::carregaDados(array('id_usuario' => $idUsuario), TABELA_FOTOS_PERFIL);
-					}
-					else {
-						$this->setIdUsuario($idUsuario);
-					}
+					$this->setIdUsuario($idUsuario);
 				}
 			}
+		}
+
+		/**
+		 * Carrega informações da foto no banco de dados para preencher o objeto
+		 * @param array dados do usuário para procurar na tabela
+		 */
+		public function carregaInformacao($dados) {
+			$this->setDados(parent::getCarregamento()->carregaDados($dados, TABELA_FOTOS_PERFIL));
 		}
 
 	    /**
@@ -82,22 +87,18 @@
 	     * @param array dados da foto de perfil a ser definida
 	     * @throws InvalidArgumentException Uso de argumentos inválidos
 	     */
-		private function setDados($dados) {
-			if(is_array($dados)){
-	            try {
-	            	$this->setId($dados['id']);
-			        $this->setIdUsuario($dados['id_usuario']);
-			        $this->setNome($dados['nome']);
-			        $this->setCaminho($dados['caminho']);
-			        $this->setDataCadastro($dados['data']);
-			    }
-			    catch(Exception $e) {
-			    	trigger_error($e->getMessage(), $e->getCode());
-			    }
-	        }
-	        else {
-	        	throw new InvalidArgumentException("Ocorreu um erro! Esperava receber um array. Recebeu ".gettype($dados).Utilidades::debugBacktrace(), E_USER_ERROR);
-	        }
+		public function setDados($dados) {
+	    	TratamentoErros::validaArray($dados, "informações da foto");
+            try {
+            	$this->setId($dados['id']);
+		        $this->setIdUsuario($dados['id_usuario']);
+		        $this->setNome($dados['nome']);
+		        $this->setCaminho($dados['caminho']);
+		        $this->setDataCadastro($dados['data']);
+		    }
+		    catch(Exception $e) {
+		    	trigger_error($e->getMessage(), $e->getCode());
+		    }
 		}
 
 	    /**
@@ -142,13 +143,11 @@
 			$this->validaExtensao();
 			if(is_null($this->getId())) {
 				try {
-					$id = parent::insereDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS_PERFIL);
+					$id = parent::getCadastro()->insereDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS_PERFIL);
 					$this->setId($id);
-					if(is_null($this->getId())) {
-						throw new Exception("Erro ao cadastrar foto! ".Utilidades::debugBacktrace(), E_USER_ERROR);
-					}
+	    			TratamentoErros::validaInteiro($this->getId(), "id da foto");
 					$this->salvaFoto();
-					$this->carregaDados(array('id' => $id));
+					parent::getCarregamento()->carregaDados(array('id' => $id));
 					parent::uploadArquivo($this->getDados());
 				}
 				catch(Exception $e) {
@@ -157,7 +156,7 @@
 			}
 			else {
 				try {
-					parent::atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS_PERFIL);
+					parent::getCadastro()->atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS_PERFIL);
 					parent::uploadArquivo($this->getDados());
 				}
 				catch(Exception $e) {
@@ -194,22 +193,12 @@
 	     * @throws Exception caso ocorra erro
 	     */
 
-		private function validaDados() {
-			if(is_null($this->getIdUsuario())) {
-				throw new InvalidArgumentException("Erro! Id de usuário inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getNome())) {
-				throw new InvalidArgumentException("Erro! Nome inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getCaminho())) {
-				throw new InvalidArgumentException("Erro! Caminho inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getArquivo())) {
-				throw new InvalidArgumentException("Erro! Arquivo inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			if(is_null($this->getDataCadastro())) {
-				throw new InvalidArgumentException("Erro! Data de cadastro inválido!".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
+		public function validaDados() {
+	    	TratamentoErros::validaNulo($this->getIdUsuario(), "informações da foto de perfil");
+	    	TratamentoErros::validaNulo($this->getNome(), "nome da foto de perfil");
+	    	TratamentoErros::validaNulo($this->getCaminho(), "caminho da foto de perfil");
+	    	TratamentoErros::validaNulo($this->getArquivo(), "arquivo da foto de perfil");
+	    	TratamentoErros::validaNulo($this->getDataCadastro(), "data de cadastro da foto de perfil");
 		}
 
 		/**
@@ -244,18 +233,8 @@
 	     * @param string id da foto
 	     */
 		public function setId($id) {
-			$this->validaId($id);
+			TratamentoErros::validaInteiro($id, "id da foto de perfil");
 			$this->id = $id;
-		}
-
-		/**
-		 * Valida o id do usuário
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaId($id) {
-			if(!is_int($id)) {
-				throw new InvalidArgumentException("Erro ao definir o id do usuário. Esperava um inteiro, recebeu ".gettype($id).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 		/**
@@ -271,18 +250,8 @@
 	     * @param string nome do usuário da foto
 	     */
 		public function setIdUsuario($idUsuario) {
-			$this->validaIdUsuario($idUsuario);
+			TratamentoErros::validaInteiro($idUsuario, "id do usuário da foto de perfil");
 			$this->idUsuario = $idUsuario;
-		}
-
-		/**
-		 * Valida id do usuário da foto
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaIdUsuario($idUsuario) {
-			if(!is_int($idUsuario)) {
-				throw new InvalidArgumentException("Erro ao definir o id do usuário. Esperava um inteiro, recebeu ".gettype($idUsuario).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 		/**
@@ -298,18 +267,8 @@
 	     * @param string nome da foto
 	     */
 		public function setNome($nome) {
-			$this->validaNome($nome);
+			TratamentoErros::validaString($nome, "nome da foto de perfil");
 			$this->nome = $nome;
-		}
-
-		/**
-		 * Valida nome da foto
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaNome($nome) {
-			if(!is_string($nome)) {
-				throw new InvalidArgumentException("Erro ao definir o url da foto. Esperava uma string, recebeu ".gettype($nome).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 		/**
@@ -325,18 +284,8 @@
 	     * @param string caminho da foto
 	     */
 		public function setCaminho($caminho) {
-			$this->validaCaminho($caminho);
+			TratamentoErros::validaString($caminho, "caminho da foto de perfil");
 			$this->caminho = $caminho;
-		}
-
-		/**
-		 * Valida caminho da foto
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaCaminho($caminho) {
-			if(!is_string($caminho)) {
-				throw new InvalidArgumentException("Erro ao definir o caminho da foto. Esperava uma string, recebeu ".gettype($caminho).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 		/**
@@ -378,19 +327,9 @@
 	     * Define os tipos permitidos
 	     * @param array tipos permitidos
 	     */
-		public function setTiposPermitidos($tipos) {
-			$this->validaTiposPermitidos($tipos);
+		public function setTiposPermitidos($tiposPermitidos) {
+			TratamentoErros::validaArray($tiposPermitidos, "tipos permitidos da foto de perfil");
 			$this->tiposPermitidos = $tiposPermitidos;
-		}
-
-		/**
-		 * Valida o tipos permitidos
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaTiposPermitidos($tiposPermitidos) {
-			if(!is_array($tiposPermitidos)) {
-				throw new InvalidArgumentException("Erro ao definir os tipos permitidos. Esperava um array, recebeu ".gettype($tiposPermitidos).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 		/**
@@ -406,21 +345,9 @@
 	     * @param string data de cadastro da foto de perfil a ser definido
 	     */
 		public function setDataCadastro($dataCadastro) {
-			$this->validaDataCadastro($dataCadastro);
+			TratamentoErros::validaString($dataCadastro, "data de cadastro da foto de perfil");
+			TratamentoErros::validaNulo($dataCadastro, "data de cadastro da foto de perfil");
 			$this->dataCadastro = $dataCadastro;
-		}
-
-		/**
-		 * Valida a data de cadastro da foto de perfil
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaDataCadastro($dataCadastro) {
-			if(!is_string($dataCadastro)) {
-				throw new InvalidArgumentException("Erro ao definir a data de cadastro da foto de perfil. Esperava uma string, recebeu ".gettype($dataCadastro).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
-			else if(is_null($dataCadastro)) {
-				throw new InvalidArgumentException("Erro ao definir a data de cadastro da foto de perfil. Inteiro nulo".Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 	    /**

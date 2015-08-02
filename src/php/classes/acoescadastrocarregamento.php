@@ -8,35 +8,35 @@
 	 * @copyright CyberFestival 2015
 	 */
 
-	interface AcoesCadstroCarregamento {
+	interface AcoesCadastroCarregamento {
 		/**
-	     * Define informações 
+	     * Define informações do objeto
 	     * @param array dados da ser definido
 	     * @throws InvalidArgumentException Uso de argumentos inválidos
 	     */
-		private function setDados($dados);
+		function setDados($dados);
 		
 		/**
-		 * Salva dados no banco de dados
+		 * Salva dados no banco de dados as informações dos objetos
 	     * @throws Exception Ocorreu erro
 		 */
-		public function salvaDados();
+		function salvaDados();
 
 		/**
-	     * Retorna informações para cadastrar no DB
+	     * Retorna informações para cadastrar no DB as informações do objeto
 	     * @return array dados
 	     */
-		public function getDadosBanco();
+		function getDadosBanco();
 
 		/**
-	     * Retorna informações
+	     * Retorna informações do objeto
 	     * @return array dados
 	     */
-		public function getDados();
+		function getDados();
 
 		/**
-	     * Valida dados
+	     * Valida dados do objeto
 	     * @throws Exception caso ocorra erro
 	     */
-		private function validaDados();
+		function validaDados();
 	}

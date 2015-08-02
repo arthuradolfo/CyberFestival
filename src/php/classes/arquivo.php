@@ -10,7 +10,7 @@
 	 * @copyright CyberFestival 2015
 	 */
 
-	class Arquivo extends Cadastro {
+	class Arquivo extends AcoesDB {
 		/**
 		 * ID do arquivo no banco de dados 
 		 * Caso o arquivo exista seu id será diferente de NULO
@@ -41,23 +41,20 @@
 		private $tiposPermitidos = array("mp4", "mp3", "wma", "aac", "ogc", "ac3", "wav", "avi", "mpeg", "mov", "rmvb", "mkv", "bmp", "gif", "jpeg", "jpg", "png", "zip", "rar", "7z", "txt", "pdf");
 
 		function __construct($tipoArquivo = null) {
+			parent::__construct();
 			if(!is_null($tipoArquivo)) {
-				if(!is_int($tipoArquivo)) {
-					throw new InvalidArgumentException("Erro, Espera receber um inteiro, recebeu ". gettype($tipoArquivo).Utilidades::debugBacktrace(), E_USER_ERROR);
+	    		TratamentoErros::validaInteiro($tipoArquivo, "tipo do arquivo");
+				if($tipoArquivo == TIPO_ARQUIVO_FOTO_PERFIL) {
+					$configuracao = array(	"tamanho" => TAMANHO_MAXIMO_ARQUIVO,
+											"largura" => LARGURA_MAXIMA_FOTO_PERFIL,
+											"altura" => ALTURA_MAXIMA_FOTO_PERFIL
+											);
+					$this->setConfiguracao($configuracao);
 				}
 				else {
-					if($tipoArquivo == TIPO_ARQUIVO_FOTO_PERFIL) {
-						$configuracao = array(	"tamanho" => TAMANHO_MAXIMO_ARQUIVO,
-												"largura" => LARGURA_MAXIMA_FOTO_PERFIL,
-												"altura" => ALTURA_MAXIMA_FOTO_PERFIL
-												);
-						$this->setConfiguracao($configuracao);
-					}
-					else {
-						$configuracao = array(	"tamanho" => TAMANHO_MAXIMO_ARQUIVO
-												);
-						$this->setConfiguracao($configuracao);
-					}
+					$configuracao = array(	"tamanho" => TAMANHO_MAXIMO_ARQUIVO
+											);
+					$this->setConfiguracao($configuracao);
 				}
 			}
 		}
@@ -69,23 +66,16 @@
 	     * @throws Exception em caso de erro
 	     */
 	    public function uploadArquivo($dados) {
-	    	if(!is_array($dados)) {
-	    		throw new InvalidArgumentException("Erro ao fazer upload de arquivo! Espera um array, recebeu ".gettype($dados).Utilidades::debugBacktrace(), E_USER_ERROR);	    		
-	    	}
-	    	else {
-	    		if(!is_null($dados['arquivo']) && !is_null($dados['caminho'])) {
-	    			$this->validaTipo($this->informacoesTipoArquivo($dados['arquivo']));
-	    			$this->validaTamanho($dados['arquivo']['size']);
-	    			if($this->getConfiguracao()['largura']) {
-	    				$this->validaAltura(getimagesize($dados['arquivo']["tmp_name"])[0]);
-	    				$this->validaLargura(getimagesize($dados['arquivo']["tmp_name"])[1]);
-	    			}
-		        	move_uploaded_file($dados['arquivo']['tmp_name'], $dados['caminho']);
-	    		}
-	    		else {
-	    			throw new Exception("Erro ao fazer upload de arquivo! Arquivo ou caminho nulos!".Utilidades::debugBacktrace(), E_USER_ERROR);	    		
-	    		}
-	    	}
+	    	TratamentoErros::validaArray($dados, "informações do arquivo");
+	    	TratamentoErros::validaNulo($dados['arquivo'], "arquivo");
+	    	TratamentoErros::validaNulo($dados['caminho'], "caminho do arquivo");
+			$this->validaTipo($this->informacoesTipoArquivo($dados['arquivo']));
+			$this->validaTamanho($dados['arquivo']['size']);
+			if($this->getConfiguracao()['largura']) {
+				$this->validaAltura(getimagesize($dados['arquivo']["tmp_name"])[0]);
+				$this->validaLargura(getimagesize($dados['arquivo']["tmp_name"])[1]);
+			}
+        	move_uploaded_file($dados['arquivo']['tmp_name'], $dados['caminho']);
 	    }
 
 	    /**
@@ -148,10 +138,9 @@
 	     * @param int altura do arquivo
 	     * @throws Exception caso ocorra erro
 		 */
-		private function validaAltura($altura) {
+		private function validaAlturaFoto($altura) {
 			if($altura > $this->getConfiguracao()['altura']) {
 				throw new Exception("Erro! Foto muito alta!".Utilidades::debugBacktrace(), E_USER_ERROR);
-				
 			}
 		}
 
@@ -160,18 +149,8 @@
 	     * @param int id do arquivo a ser definido
 	     */
 		public function setId($id) {
-			$this->validaId($id);
+			TratamentoErros::validaInteiro($id, "id do arquivo");
 			$this->id = $id;
-		}
-
-		/**
-		 * Valida o id do arquivo
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaId($id) {
-			if(!is_int($id)) {
-				throw new InvalidArgumentException("Erro ao definir o id do usuário. Esperava um inteiro, recebeu ".gettype($id).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 		/**
@@ -187,18 +166,8 @@
 	     * @param int configuracao do arquivo a ser definido
 	     */
 		public function setConfiguracao($configuracao) {
-			$this->validaConfiguracao($configuracao);
+			TratamentoErros::validaArray($configuracao, "configuracao do arquivo");
 			$this->configuracao = $configuracao;
-		}
-
-		/**
-		 * Valida a configuracao do arquivo
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaConfiguracao($configuracao) {
-			if(!is_array($configuracao)) {
-				throw new InvalidArgumentException("Erro ao definir a configuracao do usuário. Esperava um array, recebeu ".gettype($configuracao).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 		/**
@@ -241,18 +210,8 @@
 	     * @param array tipos permitidos
 	     */
 		public function setTiposPermitidos($tipos) {
-			$this->validaTiposPermitidos($tipos);
+			TratamentoErros::validaArray($tipos, "tipos permitidos");
 			$this->tiposPermitidos = $tiposPermitidos;
-		}
-
-		/**
-		 * Valida o tipos permitidos
-	     * @throws InvalidArgumentException Uso de argumentos inválidos
-		 */
-		private function validaTiposPermitidos($tiposPermitidos) {
-			if(!is_array($tiposPermitidos)) {
-				throw new InvalidArgumentException("Erro ao definir os tipos permitidos. Esperava um array, recebeu ".gettype($tiposPermitidos).Utilidades::debugBacktrace(), E_USER_ERROR);
-			}
 		}
 
 		/**
