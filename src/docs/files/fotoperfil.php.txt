@@ -1,0 +1,361 @@
+<?php
+	/**
+	 * Classe que contem informacoes e metodos para o upload de fotos de perfil
+	 * DEVE SER CHAMADA COM UM ID VÁLIDO! Ex. $foto = new FotoPerfil($id)
+	 *
+	 * @category Fotos
+	 * @package  Usuário
+	 * @author Arthur Adolfo <arthur_adolfo@hotmail.com>
+	 * @version 1.0
+	 * @copyright CyberFestival 2015
+	 */
+
+	class FotoPerfil extends Arquivo implements AcoesCadastroCarregamento {
+		/**
+		 * Id da foto
+		 * @var id da foto
+		 */
+		private $id;
+
+		/**
+		 * Id do usuário
+		 * @var id do usuário
+		 */
+		private $idUsuario;
+
+		/**
+		 * Arquivo da foto a fazer upload
+		 * @var file dados do arquivo da foto
+		 */
+		private $arquivo;
+
+		/**
+		 * Nome para a foto
+		 * @var string nome da foto
+		 */
+		private $nome;
+
+
+		/**
+		 * Caminho para a foto
+		 * @var string caminho da foto
+		 */
+		private $caminho;
+
+		/**
+		 * @var string data de cadastro
+		 */
+		private $dataCadastro;
+
+		/**
+		 * Tipos permitidos
+		 * @var array tipos permitidos
+		 */
+		private $tiposPermitidos = array("bmp", "gif", "jpeg", "jpg", "png");
+
+
+		/**
+		 * Construtor da classe, se id não for nulo, carrega dados da foto de perfil
+		 * @param int id do usuário que pertence a foto
+	     * @throws InvalidArgumentException Uso de argumentos inválidos
+	     * @throws Exception Erro ocorrido
+		 */
+		function __construct($idUsuario = NULL) {
+			parent::__construct();
+			if(!is_null($idUsuario)) {
+				parent::__construct(TIPO_ARQUIVO_FOTO_PERFIL);
+				TratamentoErros::validaInteiro($idUsuario, "id do usuário da foto de perfil");
+				if(parent::getCarregamento()->valoresExistenteDB(array('id_usuario' => $idUsuario), TABELA_FOTOS_PERFIL)) {
+					$this->carregaInformacao(array('id' => $id));
+				}
+				else {
+					$this->setIdUsuario($idUsuario);
+				}
+			}
+		}
+
+		/**
+		 * Carrega informações da foto no banco de dados para preencher o objeto
+		 * @param array dados do usuário para procurar na tabela
+		 */
+		public function carregaInformacao($dados) {
+			$this->setDados(parent::getCarregamento()->carregaDados($dados, TABELA_FOTOS_PERFIL));
+		}
+
+	    /**
+	     * Define informações da foto de perfil
+	     * @param array dados da foto de perfil a ser definida
+	     * @throws InvalidArgumentException Uso de argumentos inválidos
+	     */
+		public function setDados($dados) {
+	    	TratamentoErros::validaArray($dados, "informações da foto");
+            try {
+            	$this->setId($dados['id']);
+		        $this->setIdUsuario($dados['id_usuario']);
+		        $this->setNome($dados['nome']);
+		        $this->setCaminho($dados['caminho']);
+		        $this->setDataCadastro($dados['data']);
+		    }
+		    catch(Exception $e) {
+		    	trigger_error($e->getMessage(), $e->getCode());
+		    }
+		}
+
+	    /**
+	     * Retorna informações da foto para cadastrar no DB
+	     * @return array dados da foto
+	     */
+		public function getDadosBanco() {
+			$dados = array( "id"         => $this->getId(),
+        					"id_usuario" => $this->getIdUsuario(),
+        					"nome"       => $this->getNome(),
+	        				"caminho"    => $this->getCaminho(),
+	        				"data"       => $this->getDataCadastro()
+	        				);
+			return $dados;
+		}
+
+	    /**
+	     * Retorna informações da foto
+	     * @return array dados da foto
+	     */
+		public function getDados() {
+			$dados = array( "id"         => $this->getId(),
+        					"id_usuario" => $this->getIdUsuario(),
+        					"nome"       => $this->getNome(),
+	        				"caminho"    => $this->getCaminho(),
+	        				"arquivo"    => $this->getArquivo(),
+	        				"data"       => $this->getDataCadastro()
+	        				);
+			return $dados;
+		}
+
+
+		/**
+		 * Salva dados no banco de dados (atualiza cadastro com a foto de perfil)
+		 * Se id for nulo, cadastra nova foto de perfil no banco de dados
+		 * Se não for nulo, atualiza banco de dados
+	     * @throws Exception Ocorreu erro
+		 */
+
+		public function salvaDados() {
+			$this->validaDados();
+			$this->validaExtensao();
+			if(is_null($this->getId())) {
+				try {
+					$id = parent::getCadastro()->insereDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS_PERFIL);
+					$this->setId($id);
+	    			TratamentoErros::validaInteiro($this->getId(), "id da foto");
+					$this->salvaFoto();
+					parent::getCarregamento()->carregaDados(array('id' => $id));
+					parent::uploadArquivo($this->getDados());
+				}
+				catch(Exception $e) {
+					trigger_error("Ocorreu um erro ao tentar salvar dados da foto no DB! ".$e->getMessage().Utilidades::debugBacktrace(), E_USER_ERROR);
+				}
+			}
+			else {
+				try {
+					parent::getCadastro()->atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS_PERFIL);
+					parent::uploadArquivo($this->getDados());
+				}
+				catch(Exception $e) {
+					trigger_error("Ocorreu um erro ao tentar salvar dados da foto no DB! ".$e->getMessage().Utilidades::debugBacktrace(), $e->getCode());
+				}
+			}
+		}
+
+
+		/**
+		 * Salva foto de perfil no banco de dados fotos
+	     * @throws Exception Ocorreu erro
+		 */
+
+		public function salvaFoto() {
+			try {
+				$foto = new Foto;
+				$foto->setIdUsuario($this->getIdUsuario());
+				$foto->setNome($this->getNome());
+				$foto->setCaminho($this->getCaminho());
+				$foto->setDescricao(DESCRICAO_FOTO_PERFIL);
+				$foto->setTipo(TIPO_ARQUIVO_FOTO_PERFIL);
+				$foto->setArquivo($this->getArquivo());
+				$foto->setDataCadastro($this->getDataCadastro());
+				$foto->salvaDadosFotoPerfil();
+			}
+			catch(Exception $e) {
+				trigger_error("Erro inesperado! Não foi possível cadastrar foto no banco de dados.".$e->getMessage().Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
+		}
+
+		/**
+	     * Valida dados da foto de eprfil
+	     * @throws Exception caso ocorra erro
+	     */
+
+		public function validaDados() {
+	    	TratamentoErros::validaNulo($this->getIdUsuario(), "informações da foto de perfil");
+	    	TratamentoErros::validaNulo($this->getNome(), "nome da foto de perfil");
+	    	TratamentoErros::validaNulo($this->getCaminho(), "caminho da foto de perfil");
+	    	TratamentoErros::validaNulo($this->getArquivo(), "arquivo da foto de perfil");
+	    	TratamentoErros::validaNulo($this->getDataCadastro(), "data de cadastro da foto de perfil");
+		}
+
+		/**
+		 * Valida o id do usuário
+	     * @throws InvalidArgumentException Uso de argumentos inválidos
+		 */
+		private function validaExtensao() {
+			$tipoPermitido = false;
+			foreach($this->getTiposPermitidos() as $tipo){
+	            if(strtolower($this->getExtensao($this->getArquivo())) == strtolower($tipo)){
+	                $tipoPermitido = true;
+	            }
+	        }
+	        if(!$tipoPermitido){
+	            throw new Exception("Erro! Tipo não é permitido! envie outro arquivo!".Utilidades::debugBacktrace(), E_USER_ERROR);
+	        }
+		}
+
+	    /**
+	     * Retorna informações da foto
+	     * @return array dados da foto
+	     */
+		public function getExtensao($arquivo) {
+			$this->validaArquivo($arquivo);
+			$tipos = explode(".", $arquivo["name"]); //se arquivo.ext tipos[0] = "arquivo" e tipos[1] = "ext"
+			$extensao = $tipos[count($tipos) - 1];
+			return $extensao;
+		}
+
+	    /**
+	     * Define id da foto
+	     * @param string id da foto
+	     */
+		public function setId($id) {
+			TratamentoErros::validaInteiro($id, "id da foto de perfil");
+			$this->id = $id;
+		}
+
+		/**
+	     * Retorna id do usuário
+	     * @return int id do usuário
+	     */
+		public function getId() {
+			return $this->id;
+		}
+
+	    /**
+	     * Define nome do usuário da foto
+	     * @param string nome do usuário da foto
+	     */
+		public function setIdUsuario($idUsuario) {
+			TratamentoErros::validaInteiro($idUsuario, "id do usuário da foto de perfil");
+			$this->idUsuario = $idUsuario;
+		}
+
+		/**
+	     * Retorna id do usuário da foto
+	     * @return string id do usuário da foto
+	     */
+		private function getIdUsuario() {
+			return $this->idUsuario;
+		}
+
+	    /**
+	     * Define nome da foto
+	     * @param string nome da foto
+	     */
+		public function setNome($nome) {
+			TratamentoErros::validaString($nome, "nome da foto de perfil");
+			$this->nome = $nome;
+		}
+
+		/**
+	     * Retorna nome da foto
+	     * @return string nome da foto
+	     */
+		public function getNome() {
+			return $this->nome;
+		}
+
+	    /**
+	     * Define caminho da foto
+	     * @param string caminho da foto
+	     */
+		public function setCaminho($caminho) {
+			TratamentoErros::validaString($caminho, "caminho da foto de perfil");
+			$this->caminho = $caminho;
+		}
+
+		/**
+	     * Retorna caminho da foto
+	     * @return string caminho da foto
+	     */
+		public function getCaminho() {
+			return $this->caminho;
+		}
+
+	    /**
+	     * Define o arquivo da foto
+	     * @param file foto
+	     */
+		public function setArquivo($arquivo) {
+			$this->validaArquivo($arquivo);
+			$this->arquivo = $arquivo;
+		}
+
+		/**
+		 * Valida arquivo da foto
+	     * @throws InvalidArgumentException Uso de argumentos inválidos
+		 */
+		private function validaArquivo($arquivo) {
+			if(!isset($arquivo)) {
+				throw new InvalidArgumentException("Erro ao definir o arquivo da foto. Esperava um arquivo, recebeu ".gettype($arquivo).Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
+		}
+
+		/**
+	     * Retorna arquivo foto
+	     * @return file foto
+	     */
+		public function getArquivo() {
+			return $this->arquivo;
+		}
+
+	    /**
+	     * Define os tipos permitidos
+	     * @param array tipos permitidos
+	     */
+		public function setTiposPermitidos($tiposPermitidos) {
+			TratamentoErros::validaArray($tiposPermitidos, "tipos permitidos da foto de perfil");
+			$this->tiposPermitidos = $tiposPermitidos;
+		}
+
+		/**
+	     * Retorna tiposPermitidos
+	     * @return file
+	     */
+		public function getTiposPermitidos() {
+			return $this->tiposPermitidos;
+		}
+
+	    /**
+	     * Define a data de cadastro da foto de perfil
+	     * @param string data de cadastro da foto de perfil a ser definido
+	     */
+		public function setDataCadastro($dataCadastro) {
+			TratamentoErros::validaString($dataCadastro, "data de cadastro da foto de perfil");
+			TratamentoErros::validaNulo($dataCadastro, "data de cadastro da foto de perfil");
+			$this->dataCadastro = $dataCadastro;
+		}
+
+	    /**
+	     * Return data de cadastro da foto de perfil
+	     * @return string data de cadastro da foto de perfil
+	     */
+		private function getDataCadastro() {
+			return $this->dataCadastro;
+		}
+	}
+?>
