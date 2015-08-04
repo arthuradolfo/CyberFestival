@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<!-- Uma vez me falaram que Shakspeare era um grande escritor, depois me falaram isso outra vez, e muitas outras. Mas, só considerei Shakspeare um grande escritor quando li uma de suas peças. !-->
 		<title>Cyber Festival</title>
 		<link rel="stylesheet" href="login.css" />
 	<script language="javascript">
