@@ -92,7 +92,7 @@
 	     * Define informações da banda
 	     * @param array dados do usuário a ser definido
 	     */
-		private function setDados($dados) {
+		public function setDados($dados) {
 			TratamentoErros::validaArray($dados, "dados da banda");
             try {
             	$this->setId($dados['id']);
@@ -103,7 +103,7 @@
             	$this->setDataCadastro($dados['data']);
             	//$this->setEventos($this->carregaEventos($this->getId()));
             	//$this->setFans($this->carregaFans($this->getId()));
-            	//$this->setIntegrantes($this->carregaIntegrantes($this->getId()));
+            	$this->setIntegrantes($this->carregaIntegrantes($this->getId()));
 
 		    }
 		    catch(Exception $e) {
@@ -122,11 +122,11 @@
 			$this->validaDados();
 			if(is_null($this->getId())) {
 				try {
-					$id = parent::insereDadosBancoDeDados($this->getDadosBanco(), TABELA_BANDAS);
+					$id = parent::getCadastro()->insereDadosBancoDeDados($this->getDadosBanco(), TABELA_BANDAS);
 					$this->setId($id);
 					TratamentoErros::validaNulo($this->getId(), "id da banda");
-					$this->carregaDados(array('id' => $id));
 					$this->cadastraIntegrantes($this->getIntegrantes());
+					$this->carregaInformacao(array('id' => $id));
 				}
 				catch(Exception $e) {
 					trigger_error("Ocorreu um erro ao tentar salvar dados da banda no DB! ".$e->getMessage().Utilidades::debugBacktrace(), E_USER_ERROR);
@@ -134,7 +134,7 @@
 			}
 			else {
 				try {
-					parent::atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_BANDAS);
+					parent::getCadastro()->atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_BANDAS);
 
 				}
 				catch(Exception $e) {
@@ -198,7 +198,7 @@
 				try {
 					$integrante['id_banda'] = $this->getId();
 					if(!parent::getCarregamento()->valoresExistenteDB(array('id_banda' => $integrante['id_banda'], 'id_usuario' => $integrante['id_usuario'], 'funcao' => $integrante['funcao']), TABELA_INTEGRANTES_BANDA)) {
-						parent::getCadatro()->insereDadosBancoDeDados($integrante, TABELA_INTEGRANTES_BANDA);
+						parent::getCadastro()->insereDadosBancoDeDados($integrante, TABELA_INTEGRANTES_BANDA);
 					}
 					else {
 						throw new Exception("Erro ao cadastrar integrante! Já faz parte da banda nessa função!".Utilidades::debugBacktrace(), E_USER_ERROR);
@@ -216,7 +216,7 @@
 	     * @throws Exception caso ocorra erro
 	     */
 
-		private function validaDados() {
+		public function validaDados() {
 			TratamentoErros::validaNulo($this->getNome(), "nome da banda");
 			TratamentoErros::validaNulo($this->getEmail(), "email da banda");
 			TratamentoErros::validaNulo($this->getEstilo(), "estilo da banda");
@@ -224,13 +224,42 @@
 			TratamentoErros::validaNulo($this->getDataCadastro(), "data de cadastro da banda");
 		}
 
+		/**
+		 * Carrega informações da banda pelo Id
+		 * @param int id da banda
+		 */
+		public function carregaBandaPorId($id) {
+			TratamentoErros::validaInteiro($id, "id da banda");
+			$this->carregaInformacao(array('id' => $id));
+		}
+
+		/**
+		 * Carrega informações da banda pelo nome
+		 * @param string nome da banda
+		 */
+		public function carregaBandaPorNome($nome) {
+			TratamentoErros::validaString($nome, "nome da banda");
+			$this->carregaInformacao(array('nome' => $nome));
+		}
+
+		/**
+		 * Carrega integrantes da banda pelo Id
+		 * @param int id da banda
+		 */
+		public function carregaIntegrantes($id) {
+			TratamentoErros::validaInteiro($id, "id da banda");
+			$query = new MysqliDb;
+			$query->where("id_banda", $id);
+			return $query->get(TABELA_INTEGRANTES_BANDA);
+		}
+
 	    /**
-	     * Retorna informações da banda do usuário
+	     * Retorna bandas do usuário
 	     * @param int id do usuário
 	     * @return array dados das bandas
 	     */
 		public function getBandasUsuario($id) {
-			TratamentoErros::validaInteiro($id, "id da banda");
+			TratamentoErros::validaInteiro($id, "id do usuario");
 			if(parent::getCarregamento()->valoresExistenteDB(array('id' => $id), TABELA_USUARIOS)) {
 				$query = new MysqliDb;
 				$query->where("id_usuario", $id);
@@ -242,9 +271,41 @@
 				return $bandasUsuario;
 			}
 			else {
-				throw new Exception("Erro! Banda inexistente no banco de dados!".Utilidades::debugBacktrace(), E_USER_ERROR);
+				throw new Exception("Erro! Usuario inexistente no banco de dados!".Utilidades::debugBacktrace(), E_USER_ERROR);
 			}
 		}
+
+	    /**
+	     * Retorna bandas de tal estilo
+	     * @param int id do usuário
+	     * @return array dados das bandas
+	     */
+		public function getBandasEstilo($estilo) {
+			TratamentoErros::validaString($estilo, "estilo da banda");
+			if(parent::getCarregamento()->valoresExistenteDB(array('nome' => $estilo), TABELA_ESTILOS_MUSICAIS)) {
+				$query = new MysqliDb;
+				$query->where("estilo", $estilo);
+				$bandas = $query->get(TABELA_BANDAS);
+				return $bandas;
+			}
+			else {
+				throw new Exception("Erro! Estilo inexistente no banco de dados!".Utilidades::debugBacktrace(), E_USER_ERROR);
+			}
+		}
+
+	    /**
+	     * Retorna bandas de tal estilo
+	     * @param int id do usuário
+	     * @return array dados das bandas
+	     */
+		public function getBandasCidade($cidade) {
+			TratamentoErros::validaString($cidade, "cidade da banda");
+			$query = new MysqliDb;
+			$query->where("cidade", $cidade);
+			$bandas = $query->get(TABELA_BANDAS);
+			return $bandas;
+		}
+
 		/**
 		 * Define o id da banda
 		 * @param int id da banda

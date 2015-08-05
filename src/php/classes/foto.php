@@ -73,7 +73,6 @@
 		function __construct($idUsuario = NULL) {
 			parent::__construct();
 			if(!is_null($idUsuario)) {
-				parent::__construct();
 				TratamentoErros::validaInteiro($idUsuario, "id do usuário");
 				if(parent::getCarregamento()->valoresExistenteDB(array('id_usuario' => $idUsuario), TABELA_FOTOS)) {
 					$this->carregaInformacao(array('id' => $id));
@@ -97,7 +96,7 @@
 	     * @param array dados da foto de perfil a ser definida
 	     * @throws InvalidArgumentException Uso de argumentos inválidos
 	     */
-		private function setDados($dados) {
+		public function setDados($dados) {
 			TratamentoErros::validaArray($dados, "dados da foto");
 			try {
             	$this->setId($dados['id']);
@@ -160,7 +159,7 @@
 					$id = parent::insereDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS);
 					$this->setId($id);
 					TratamentoErros::validaInteiro($this->getId(), "id da foto");
-					parent::getCarregamento()->carregaDados(array('id' => $id));
+					$this->carregaInformacao(array('id' => $id));
 					parent::uploadArquivo($this->getDados());
 				}
 				catch(Exception $e) {
@@ -191,7 +190,7 @@
 					$id = parent::getCadastro()->insereDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS);
 					$this->setId($id);
 					TratamentoErros::validaInteiro($this->getId(), "id da foto");
-					parent::getCarregamento()->carregaDados(array('id' => $id));
+					$this->carregaInformacao(array('id' => $id));
 				}
 				catch(Exception $e) {
 					trigger_error("Ocorreu um erro ao tentar salvar dados da foto no DB! ".$e->getMessage().Utilidades::debugBacktrace(), E_USER_ERROR);
@@ -204,7 +203,7 @@
 	     * @throws Exception caso ocorra erro
 	     */
 
-		private function validaDados() {
+		public function validaDados() {
 			TratamentoErros::validaNulo($this->getIdUsuario(), "id do usuário da foto");
 			TratamentoErros::validaNulo($this->getNome(), "nome da foto");
 			TratamentoErros::validaNulo($this->getCaminho(), "caminho da foto");

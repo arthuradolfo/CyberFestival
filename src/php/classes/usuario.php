@@ -336,7 +336,7 @@
 		private function carregaBandas($id) {
 			TratamentoErros::validaInteiro($id, "id do usuário");
 			$bandas = new Banda;
-			return $bandas->getBandasUsuario();
+			return $bandas->getBandasUsuario($id);
 		}
 
 		/**

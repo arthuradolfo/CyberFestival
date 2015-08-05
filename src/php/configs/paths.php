@@ -113,6 +113,12 @@ define("CAMINHO_BANDAS_VIDEO", CAMINHO_UPLOAD_BANDAS."/videos");
  * @var string  CAMINHO_BANDAS_MUSICAS
  */
 define("CAMINHO_BANDAS_MUSICAS", CAMINHO_UPLOAD_BANDAS."/musicas"); 
+
+ /**
+ * O caminho nível-servidor dos arquivos de testes enviado
+ * @var string  CAMINHO_UPLOAD_BANDAS
+ */
+define("CAMINHO_UPLOAD_TESTES", CAMINHO_UPLOAD."/testes");
  
 
  /**

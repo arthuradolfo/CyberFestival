@@ -62,10 +62,10 @@
 		 */
 		private $mensagemErroEnviaEmailComCopiaOculta;
 
-		function __construct($arquivo) {
+		function __construct() {
 			try {
 				$this->testaEnviaEmail();
-				$this->testaEnviaEmailComAnexo($arquivo);
+				$this->testaEnviaEmailComAnexo();
 				$this->testaEnviaEmailComCopia();
 				$this->testaEnviaEmailComCopiaOculta();
 				$this->printaResultado();
@@ -95,13 +95,13 @@
 		/**
 		 * Método que testa o envio de email com anexo
 		 */
-		public function testaEnviaEmailComAnexo($arquivo) {
+		public function testaEnviaEmailComAnexo() {
 			try {
 				$email = new Email;
 				$email->setTitulo("Email teste");
 				$email->setMensagem("Este email é só um teste!");
 				$email->setDestinatario("arthur_adolfo@hotmail.com","arthur");
-				$email->setAnexo($arquivo['tmp_name']);
+				$email->setAnexo("C:\wamp\www\CyberFestival\uploads\usuarios\\fotosperfil\cristian.jpg");
 				$email->sendEmail();
 			}
 			catch(Exception $e) {
@@ -119,7 +119,7 @@
 				$email->setTitulo("Email teste");
 				$email->setMensagem("Este email é só um teste!");
 				$email->setDestinatario("arthur_adolfo@hotmail.com","arthur");
-				$email->setCopia("arthur_adolfo@hotmail.com","arthur");
+				$email->setCopia("arthur03011997@gmail.com","arthur");
 				$email->sendEmail();
 			}
 			catch(Exception $e) {
@@ -137,7 +137,7 @@
 				$email->setTitulo("Email teste");
 				$email->setMensagem("Este email é só um teste!");
 				$email->setDestinatario("arthur_adolfo@hotmail.com","arthur");
-				$email->setCopiaOculta("arthur_adolfo@hotmail.com","arthur");
+				$email->setCopiaOculta("arthur03011997@gmail.com","arthur");
 				$email->sendEmail();
 			}
 			catch(Exception $e) {
@@ -156,7 +156,7 @@
 				var_dump($this->getMensagemErroEnviaEmail);
 			}
 			else {
-				echo "Teste de envio de email bem sucedido!";
+				echo "Teste de envio de email bem sucedido!<br>";
 			}
 
 			if($this->getErroEnviaEmailComAnexo()) {
@@ -164,7 +164,7 @@
 				var_dump($this->getMensagemErroEnviaEmailComAnexo);
 			}
 			else {
-				echo "Teste de envio de email com anexo bem sucedido!";
+				echo "Teste de envio de email com anexo bem sucedido!<br>";
 			}
 
 			if($this->getErroEnviaEmailComCopia()) {
@@ -172,7 +172,7 @@
 				var_dump($this->getMensagemErroEnviaEmailComCopia);
 			}
 			else {
-				echo "Teste de envio de email com copia bem sucedido!";
+				echo "Teste de envio de email com copia bem sucedido!<br>";
 			}
 
 			if($this->getErroEnviaEmailComCopiaOculta()) {
@@ -180,7 +180,7 @@
 				var_dump($this->getMensagemErroEnviaEmailComCopiaOculta);
 			}
 			else {
-				echo "Teste de envio de email com copia oculta bem sucedido!";
+				echo "Teste de envio de email com copia oculta bem sucedido!<br>";
 			}
 		}
 
@@ -296,11 +296,6 @@
 			return $this->mensagemErroEnviaEmailComCopiaOculta;
 		}
 	}
-	if($_FILES) {
-		$email = new Email($_FILES['arquivo']);
-	}
+	
+	$emailTeste = new TesteEmail();
 ?>
-<form action="usuario.php" method="post">
-	<input type="file" name="arquivo">
-	<input type="submit">
-</form>

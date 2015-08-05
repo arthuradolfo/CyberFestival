@@ -80,13 +80,27 @@
 		 * @var array mensagemErroCarregaUsuarioPorEmail
 		 */
 		private $mensagemErroCarregaUsuarioPorEmail;
+
+		/**
+		 * Variavel booleana que diz se houve erro ao fazer upload da foto de perfil
+		 * por padrão é false
+		 * @var boolean erroUploadFotoPerfil
+		 */
+		private $erroUploadFotoPerfil = false;
+
+		/**
+		 * Variavel que retorna mensagens de erro
+		 * @var array mensagemErroUploadFotoPerfil
+		 */
+		private $mensagemErroUploadFotoPerfil;
 		
-		function __construct() {
+		function __construct($arquivo) {
 			$this->testaCadastraUsuario();
 			$this->testaCarregaUsuario();
 			$this->testaCarregaUsuarioPorId();
 			$this->testaCarregaUsuarioPorNome();
 			$this->testaCarregaUsuarioPorEmail();
+			$this->testaUploadFotoPerfil($arquivo);
 			$this->printaResultado();
 		}
 
@@ -107,7 +121,7 @@
 			}
 			catch(Exception $e) {
 				$this->setErroCadastraUsuario(true);
-				$this->setMensagemErroCadastraUsuario($e->getMessageErroCadastraUsuario());
+				$this->setMensagemErroCadastraUsuario($e->getMessage());
 			}
 		}
 
@@ -205,6 +219,20 @@
 		}
 
 		/**
+		 * Método que faz o teste de upload de foto de perfil
+		 */
+		public function testaUploadFotoPerfil($arquivo) {
+			try {
+				$usuario = new Usuario($this->getUsuario()['id']);
+				$usuario->uploadFotoPerfil($arquivo);
+			}
+			catch(Exception $e) {
+				$this->setErroUploadFotoPerfil(true);
+				$this->setMensagemErroUploadFotoPerfil($e->getMessage());
+			}
+		}
+
+		/**
 		 * Valida  os dados do usuário
 		 * @param array info do usuario
 		 * @param array mensagem de erro
@@ -291,6 +319,14 @@
 			}
 			else {
 				echo "Teste de carregamento por email bem sucedido!<br>";
+			}
+			
+			if($this->getErroUploadFotoPerfil()) {
+				echo "Erro! Teste de upload de foto de perfil falhou!<br>";
+				var_dump($this->getMensagemErroUploadFotoPerfil());
+			}
+			else {
+				echo "Teste de upload de foto de perfil bem sucedido!<br>";
 			}
 		}
 
@@ -447,6 +483,42 @@
 		public function getMensagemErroCarregaUsuarioPorEmail() {
 			return $this->mensagemErroCarregaUsuarioPorEmail;
 		}
+
+		/**
+		 * @param boolean
+		 */
+		public function setErroUploadFotoPerfil($erroUploadFotoPerfil) {
+			$this->erroUploadFotoPerfil = $erroUploadFotoPerfil;
+		}
+
+		/**
+		 * @return boolean
+		 */
+		public function getErroUploadFotoPerfil() {
+			return $this->erroUploadFotoPerfil;
+		}
+
+		/**
+		 * @param string
+		 */
+		public function setMensagemErroUploadFotoPerfil($mensagemErroUploadFotoPerfil) {
+			$this->mensagemErroUploadFotoPerfil[] = $mensagemErroUploadFotoPerfil;
+		}
+
+		/**
+		 * @return string
+		 */
+		public function getMensagemErroUploadFotoPerfil() {
+			return $this->mensagemErroUploadFotoPerfil;
+		}
 	}
-	$teste = new TesteUsuario;
+
+	if($_FILES) {
+		var_dump($_FILES['arquivo']);
+		$usuarioTeste = new TesteUsuario($_FILES['arquivo']);
+	}
 ?>
+<form action="usuario.php" method="post" enctype="multipart/form-data">
+	<input type="file" name="arquivo">
+	<input type="submit">
+</form>

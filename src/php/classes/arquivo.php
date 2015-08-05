@@ -57,6 +57,11 @@
 					$this->setConfiguracao($configuracao);
 				}
 			}
+			else {
+				$configuracao = array(	"tamanho" => TAMANHO_MAXIMO_ARQUIVO
+										);
+				$this->setConfiguracao($configuracao);
+			}
 		}
 
 	    /**
@@ -71,7 +76,7 @@
 	    	TratamentoErros::validaNulo($dados['caminho'], "caminho do arquivo");
 			$this->validaTipo($this->informacoesTipoArquivo($dados['arquivo']));
 			$this->validaTamanho($dados['arquivo']['size']);
-			if($this->getConfiguracao()['largura']) {
+			if(isset($this->getConfiguracao()['largura'])) {
 				$this->validaAltura(getimagesize($dados['arquivo']["tmp_name"])[0]);
 				$this->validaLargura(getimagesize($dados['arquivo']["tmp_name"])[1]);
 			}
@@ -138,7 +143,7 @@
 	     * @param int altura do arquivo
 	     * @throws Exception caso ocorra erro
 		 */
-		private function validaAlturaFoto($altura) {
+		private function validaAltura($altura) {
 			if($altura > $this->getConfiguracao()['altura']) {
 				throw new Exception("Erro! Foto muito alta!".Utilidades::debugBacktrace(), E_USER_ERROR);
 			}

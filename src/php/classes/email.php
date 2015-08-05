@@ -40,7 +40,8 @@
 	        $this->Password   = SENHA_EMAIL_SISTEMA; // senha remetente
 	        $this->SetFrom(EMAIL_SISTEMA, NOME_SISTEMA); 
 	        $this->IsHTML(true);
-	        $this->CharSet = 'UTF-8'; 
+	        $this->CharSet = 'UTF-8';
+	        chmod("C:\wamp\www\CyberFestival\uploads", 0777);
 		}
 
 		/**

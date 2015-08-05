@@ -61,9 +61,8 @@
 	     * @throws Exception Erro ocorrido
 		 */
 		function __construct($idUsuario = NULL) {
-			parent::__construct();
+			parent::__construct(TIPO_ARQUIVO_FOTO_PERFIL);
 			if(!is_null($idUsuario)) {
-				parent::__construct(TIPO_ARQUIVO_FOTO_PERFIL);
 				TratamentoErros::validaInteiro($idUsuario, "id do usuário da foto de perfil");
 				if(parent::getCarregamento()->valoresExistenteDB(array('id_usuario' => $idUsuario), TABELA_FOTOS_PERFIL)) {
 					$this->carregaInformacao(array('id' => $id));
@@ -147,7 +146,7 @@
 					$this->setId($id);
 	    			TratamentoErros::validaInteiro($this->getId(), "id da foto");
 					$this->salvaFoto();
-					parent::getCarregamento()->carregaDados(array('id' => $id));
+					$this->carregaInformacao(array('id' => $id));
 					parent::uploadArquivo($this->getDados());
 				}
 				catch(Exception $e) {
