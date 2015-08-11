@@ -1,5 +1,5 @@
 <?php
-	include_once("C:\wamp\www\CyberFestival\src\php\configs\base.php");
+	include_once("base.php");
 	/**
 	 * Classe de testes para a classe Usuario
 	 * @category Usuário
@@ -8,7 +8,7 @@
 	 * @version 1.0
 	 * @copyright 2015
 	 */
-	class TesteUsuario {
+	class TesteCadastro {
 
 		/**
 		 * Variavel booleana que diz se houve erro ao inserir dado no banco de dados
@@ -35,49 +35,58 @@
 		 * @var array mensagemErroAtualizaBanco
 		 */
 		private $mensagemErroAtualizaBanco;
+
+		private $id;
 		
-		function __construct($arquivo) {
+		function __construct() {
 			$this->testaInsereBanco();
 			$this->testaAtualizaBanco();
 			$this->printaResultado();
 		}
 
 		/**
-		 * Método que testa o cadastro de usuário com todos os erros possíveis e da forma correta
+		 * Método que testa o cadastro de dados com todos os erros possíveis e da forma correta
 		 */
-		public function testaCadastraUsuario() {
+		public function testaInsereBanco() {
 			try {
-				$dados = array( "nome"          => "teste",
+				$dados = array( "id"            => NULL,
+								"nome"          => "teste",
 								"email"         => "email.teste@testehost.com",
 								"nacionalidade" => "Brasileiro",
 								"tipo"          => USER_TYPE_ARTIST,
 								"senha"         => "senhaTeste",
 								"estilo"        => "Rock",
-								"data"  => date("y-m-d")
+								"data"          => date("y-m-d")
 								);
-				$this->cadastraUsuario($dados);
+				$cadastro = new Cadastro;
+				$this->id = $cadastro->insereDadosBancoDeDados($dados, TABELA_USUARIOS);
 			}
 			catch(Exception $e) {
-				$this->setErroCadastraUsuario(true);
-				$this->setMensagemErroCadastraUsuario($e->getMessage());
+				$this->setErroInsereBanco(true);
+				$this->setMensagemErroInsereBanco($e->getMessage());
 			}
 		}
 
 		/**
-		 * Método que faz o teste de retorno de informações do usuário
+		 * Método que testa a atualização de dados com todos os erros possíveis e da forma correta
 		 */
-		public function testaCarregaUsuario() {
+		public function testaAtualizaBanco() {
 			try {
-				$usuario = new Usuario($this->getUsuario()['id']);
-				var_dump($usuario->getDados());
-				if(!$this->validaUsuario($usuario->getDados())["erro"]) {
-					$this->setMensagemErroCarregaUsuario($this->validaUsuario($usuario->getDados())["mensagemErro"]);
-					$this->setErroCarregaUsuario(true);
-				}
+				$dados = array( "id"            => $this->id,
+								"nome"          => "teste123",
+								"email"         => "email.teste@testehost.com",
+								"nacionalidade" => "Brasileiro",
+								"tipo"          => USER_TYPE_ARTIST,
+								"senha"         => "senhaTeste",
+								"estilo"        => "Rock",
+								"data"          => date("y-m-d")
+								);
+				$cadastro = new Cadastro;
+				$cadastro->atualizaDadosBancoDeDados($dados, TABELA_USUARIOS);
 			}
 			catch(Exception $e) {
-				$this->setErroCarregaUsuario(true);
-				$this->setMensagemErroCarregaUsuario($e->getMessage());
+				$this->setErroAtualizaBanco(true);
+				$this->setMensagemErroAtualizaBanco($e->getMessage());
 			}
 		}
 
@@ -85,82 +94,78 @@
 		 * Printa resultado dos testes
 		 */
 		public function printaResultado() {
-			if($this->getErroCadastraUsuario()) {
-				echo "Erro! Teste de cadastramento falhou!<br>";
-				var_dump($this->getMensagemErroCadastraUsuario());
+			if($this->getErroAtualizaBanco()) {
+				echo "Erro! Teste de cadastramento no banco de dados falhou!<br>";
+				var_dump($this->getMensagemErroAtualizaBanco());
 			}
 			else {
-				echo "Teste de cadastramento bem sucedido!<br>";
+				echo "Teste de cadastramento no banco de dados bem sucedido!<br>";
 			}
 
-			if($this->getErroCarregaUsuario()) {
-				echo "Erro! Teste de carregamento falhou!<br>";
-				var_dump($this->getMensagemErroCarregaUsuario());
+			if($this->getErroAtualizaBanco()) {
+				echo "Erro! Teste de atualização do banco de dados falhou!<br>";
+				var_dump($this->getMensagemErroAtualizaBanco());
 			}
 			else {
-				echo "Teste de carregamento bem sucedido!<br>";
+				echo "Teste de atualização do banco de dados bem sucedido!<br>";
 			}
 		}
 
 		/**
 		 * @param boolean
 		 */
-		public function setErroCadastraUsuario($erroCadastraUsuario) {
-			$this->erroCadastraUsuario = $erroCadastraUsuario;
+		public function setErroInsereBanco($erroInsereBanco) {
+			$this->erroInsereBanco = $erroInsereBanco;
 		}
 
 		/**
 		 * @return boolean
 		 */
-		public function getErroCadastraUsuario() {
-			return $this->erroCadastraUsuario;
+		public function getErroInsereBanco() {
+			return $this->erroInsereBanco;
 		}
 
 		/**
 		 * @param string
 		 */
-		public function setMensagemErroCadastraUsuario($mensagemErroCadastraUsuario) {
-			$this->mensagemErroCadastraUsuario[] = $mensagemErroCadastraUsuario;
+		public function setMensagemErroInsereBanco($mensagemErroInsereBanco) {
+			$this->mensagemErroInsereBanco[] = $mensagemErroInsereBanco;
 		}
 
 		/**
 		 * @return string
 		 */
-		public function getMensagemErroCadastraUsuario() {
-			return $this->mensagemErroCadastraUsuario;
+		public function getMensagemErroInsereBanco() {
+			return $this->mensagemErroInsereBanco;
 		}
 
 		/**
 		 * @param boolean
 		 */
-		public function setErroCarregaUsuario($erroCarregaUsuario) {
-			$this->erroCarregaUsuario = $erroCarregaUsuario;
+		public function setErroAtualizaBanco($erroAtualizaBanco) {
+			$this->erroAtualizaBanco = $erroAtualizaBanco;
 		}
 
 		/**
 		 * @return boolean
 		 */
-		public function getErroCarregaUsuario() {
-			return $this->erroCarregaUsuario;
+		public function getErroAtualizaBanco() {
+			return $this->erroAtualizaBanco;
 		}
 
 		/**
 		 * @param string
 		 */
-		public function setMensagemErroCarregaUsuario($mensagemErroCarregaUsuario) {
-			$this->mensagemErroCarregaUsuario[] = $mensagemErroCarregaUsuario;
+		public function setMensagemErroAtualizaBanco($mensagemErroAtualizaBanco) {
+			$this->mensagemErroAtualizaBanco[] = $mensagemErroAtualizaBanco;
 		}
 
 		/**
 		 * @return string
 		 */
-		public function getMensagemErroCarregaUsuario() {
-			return $this->mensagemErroCarregaUsuario;
+		public function getMensagemErroAtualizaBanco() {
+			return $this->mensagemErroAtualizaBanco;
 		}
 	}
-	$cadastroTeste = new TesteUsuario($_FILES['arquivo']);
+	$cadastroTeste = new TesteCadastro;
 ?>
-<form action="usuario.php" method="post" enctype="multipart/form-data">
-	<input type="file" name="arquivo">
-	<input type="submit">
-</form>

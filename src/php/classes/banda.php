@@ -8,7 +8,7 @@
 	 * @version 1.0
 	 * @copyright CyberFestival 2015
 	 */
-	class Banda extends AcoesDB implements AcoesCadastroCarregamento {
+	class Banda implements AcoesCadastroCarregamento {
 
 		/**
 		 * ID da banda no banco de dados 
@@ -68,10 +68,10 @@
 		private $dataCadastro;
 
 		function __construct($id = NULL) {
-			parent::__construct();
 			if(!is_null($id)) {
 				TratamentoErros::validaInteiro($id, "id da banda");
-				if(parent::getCarregamento()->valoresExistenteDB(array('id' => $id), TABELA_BANDAS)) {
+				$carregamento = new Carregamento;
+				if($carregamento->valoresExistenteDB(array('id' => $id), TABELA_BANDAS)) {
 					$this->carregaInformacao(array('id' => $id));
 				}
 				else {
@@ -85,7 +85,8 @@
 		 * @param array dados do usuário para procurar na tabela
 		 */
 		public function carregaInformacao($dados) {
-			$this->setDados(parent::getCarregamento()->carregaDados($dados, TABELA_BANDAS));
+			$carregamento = new Carregamento;
+			$this->setDados($carregamento->carregaDados($dados, TABELA_BANDAS));
 		}
 
 	    /**
@@ -122,7 +123,8 @@
 			$this->validaDados();
 			if(is_null($this->getId())) {
 				try {
-					$id = parent::getCadastro()->insereDadosBancoDeDados($this->getDadosBanco(), TABELA_BANDAS);
+					$cadastro = new Cadastro;
+					$id = $cadastro->insereDadosBancoDeDados($this->getDadosBanco(), TABELA_BANDAS);
 					$this->setId($id);
 					TratamentoErros::validaNulo($this->getId(), "id da banda");
 					$this->cadastraIntegrantes($this->getIntegrantes());
@@ -134,7 +136,8 @@
 			}
 			else {
 				try {
-					parent::getCadastro()->atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_BANDAS);
+					$cadastro = new Cadastro;
+					$cadastro->atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_BANDAS);
 
 				}
 				catch(Exception $e) {
@@ -197,8 +200,10 @@
 			foreach($integrantes as $integrante) {
 				try {
 					$integrante['id_banda'] = $this->getId();
-					if(!parent::getCarregamento()->valoresExistenteDB(array('id_banda' => $integrante['id_banda'], 'id_usuario' => $integrante['id_usuario'], 'funcao' => $integrante['funcao']), TABELA_INTEGRANTES_BANDA)) {
-						parent::getCadastro()->insereDadosBancoDeDados($integrante, TABELA_INTEGRANTES_BANDA);
+					$carregamento = new Carregamento;
+					$cadastro = new Cadastro;
+					if(!$carregamento->valoresExistenteDB(array('id_banda' => $integrante['id_banda'], 'id_usuario' => $integrante['id_usuario'], 'funcao' => $integrante['funcao']), TABELA_INTEGRANTES_BANDA)) {
+						$cadastro->insereDadosBancoDeDados($integrante, TABELA_INTEGRANTES_BANDA);
 					}
 					else {
 						throw new Exception("Erro ao cadastrar integrante! Já faz parte da banda nessa função!".Utilidades::debugBacktrace(), E_USER_ERROR);
@@ -260,7 +265,8 @@
 	     */
 		public function getBandasUsuario($id) {
 			TratamentoErros::validaInteiro($id, "id do usuario");
-			if(parent::getCarregamento()->valoresExistenteDB(array('id' => $id), TABELA_USUARIOS)) {
+			$carregamento = new Carregamento;
+			if($carregamento->valoresExistenteDB(array('id' => $id), TABELA_USUARIOS)) {
 				$query = new MysqliDb;
 				$query->where("id_usuario", $id);
 				$bandas = $query->get(TABELA_INTEGRANTES_BANDA);
@@ -282,7 +288,8 @@
 	     */
 		public function getBandasEstilo($estilo) {
 			TratamentoErros::validaString($estilo, "estilo da banda");
-			if(parent::getCarregamento()->valoresExistenteDB(array('nome' => $estilo), TABELA_ESTILOS_MUSICAIS)) {
+			$carregamento = new Carregamento;
+			if($carregamento->valoresExistenteDB(array('nome' => $estilo), TABELA_ESTILOS_MUSICAIS)) {
 				$query = new MysqliDb;
 				$query->where("estilo", $estilo);
 				$bandas = $query->get(TABELA_BANDAS);

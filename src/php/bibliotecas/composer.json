@@ -1,0 +1,26 @@
+{
+    "name": "CyberFestival",
+    "description": "Rede Social de Música",
+    "type": "library",
+    "require": {
+        "ezyang/htmlpurifier": "^4.6",
+        "phpmailer/phpmailer": "^5.2",
+        "phpunit/phpunit": "^4.7",
+        "joshcam/mysqli-database-class": "^2.1",
+    },
+    "license": "CF",
+    "authors": [
+        {
+            "name": "Arthur Adolfo",
+            "email": "arthur_adolfo@hotmail.com"
+        },
+
+        {
+            "name": "Bernardo Lignati",
+            "email": "beranrdonlignati@hotmail.com"
+        }
+    ],
+    "config": {
+        "vendor-dir": ""
+    }
+}

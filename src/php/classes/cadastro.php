@@ -48,7 +48,9 @@
 			$dados['id'] = $id; //seta o id para o novo id do usuario (MUITO IMPORTANTE)
 			$this->setLastQuery($query);
 			$this->setDadosInseridos($dados);
-			var_dump($this->getDadosInseridos());
+			if(MODO_DEV) {
+				var_dump($this->getDadosInseridos());
+			}
 			return $id;
 		}
 
@@ -69,6 +71,9 @@
 			}
 			$this->setLastQuery($query);
 			$this->setDadosAtualizados($dados);
+			if(MODO_DEV) {
+				var_dump($this->getDadosAtualizados());
+			}
 		}
 
 		/**

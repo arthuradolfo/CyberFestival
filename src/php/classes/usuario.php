@@ -9,7 +9,7 @@
 	 * @copyright CyberFestival 2015
 	 */
 
-	class Usuario extends AcoesDBUsuario implements AcoesCadastroCarregamento {
+	class Usuario implements AcoesCadastroCarregamento {
 		/**
 		 * ID do usuário no banco de dados 
 		 * Caso o usuário exista seu id será diferente de NULO
@@ -91,10 +91,10 @@
 		 * @throws InvalidArgumentException Uso de arguimentos inválidos
 		 */
 		public function __construct($id = NULL) {
-			parent::__construct();
 			if(!is_null($id)) {
 				TratamentoErros::validaInteiro($id, "id do usuário");
-				if(parent::getCarregamento()->valoresExistenteDB(array('id' => $id), TABELA_USUARIOS)) {
+				$carregamento = new Carregamento;
+				if($carregamento->valoresExistenteDB(array('id' => $id), TABELA_USUARIOS)) {
 					$this->carregaInformacao(array('id' => $id));
 				}
 				else {	
@@ -108,7 +108,8 @@
 		 * @param array dados do usuário para procurar na tabela
 		 */
 		public function carregaInformacao($dados) {
-			$this->setDados(parent::getCarregamento()->carregaDados($dados, TABELA_USUARIOS));
+			$carregamento = new Carregamento;
+			$this->setDados($carregamento->carregaDados($dados, TABELA_USUARIOS));
 		}
 
 	    /**
@@ -152,7 +153,8 @@
 			$this->validaDados();
 			if(is_null($this->getId())) {
 				try {
-					$id = parent::getCadastro()->insereDadosBancoDeDados($this->getDadosBanco(), TABELA_USUARIOS);
+					$cadastro = new CadastroUsuario;
+					$id = $cadastro->insereDadosBancoDeDados($this->getDadosBanco(), TABELA_USUARIOS);
 					$this->setId($id); //Carrega o id fornecido ao usuário no cadastramento
 					TratamentoErros::validaNulo($this->getId(), "id do usuário");
 					//Carrega os dados para enviar email de confirmação
@@ -160,7 +162,7 @@
 									"nome" => $this->getNome(),
 									"email" => $this->getEmail()
 									);
-					parent::getCadastro()->enviaEmailConfirmacao($dados);
+					$cadastro->enviaEmailConfirmacao($dados);
 					$this->carregaInformacao(array('id' => $id)); //Carrega o codigo de verificação no objeto
 				}
 				catch(Exception $e) {
@@ -169,7 +171,8 @@
 			}
 			else {
 				try {
-					parent::getCadastro()->atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_USUARIOS);
+					$cadastro = new CadastroUsuario;
+					$cadastro->atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_USUARIOS);
 				}
 				catch(Exception $e) {
 					trigger_error("Ocorreu um erro ao tentar salvar dados do usuário no DB! ".$e->getMessage().Utildiades::debugBacktrace(), $e->getCode());

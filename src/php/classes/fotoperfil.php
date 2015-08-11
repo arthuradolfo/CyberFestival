@@ -64,7 +64,8 @@
 			parent::__construct(TIPO_ARQUIVO_FOTO_PERFIL);
 			if(!is_null($idUsuario)) {
 				TratamentoErros::validaInteiro($idUsuario, "id do usuário da foto de perfil");
-				if(parent::getCarregamento()->valoresExistenteDB(array('id_usuario' => $idUsuario), TABELA_FOTOS_PERFIL)) {
+				$carregamento = new Carregamento;
+				if($carregamento->valoresExistenteDB(array('id_usuario' => $idUsuario), TABELA_FOTOS_PERFIL)) {
 					$this->carregaInformacao(array('id' => $id));
 				}
 				else {
@@ -78,7 +79,8 @@
 		 * @param array dados do usuário para procurar na tabela
 		 */
 		public function carregaInformacao($dados) {
-			$this->setDados(parent::getCarregamento()->carregaDados($dados, TABELA_FOTOS_PERFIL));
+			$carregamento = new Carregamento;
+			$this->setDados($carregamento->carregaDados($dados, TABELA_FOTOS_PERFIL));
 		}
 
 	    /**
@@ -142,7 +144,8 @@
 			$this->validaExtensao();
 			if(is_null($this->getId())) {
 				try {
-					$id = parent::getCadastro()->insereDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS_PERFIL);
+					$cadastro = new Cadastro;
+					$id = $cadastro->insereDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS_PERFIL);
 					$this->setId($id);
 	    			TratamentoErros::validaInteiro($this->getId(), "id da foto");
 					$this->salvaFoto();
@@ -155,7 +158,8 @@
 			}
 			else {
 				try {
-					parent::getCadastro()->atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS_PERFIL);
+					$cadastro = new Cadastro;
+					$cadastro->atualizaDadosBancoDeDados($this->getDadosBanco(), TABELA_FOTOS_PERFIL);
 					parent::uploadArquivo($this->getDados());
 				}
 				catch(Exception $e) {

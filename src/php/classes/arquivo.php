@@ -10,7 +10,7 @@
 	 * @copyright CyberFestival 2015
 	 */
 
-	class Arquivo extends AcoesDB {
+	class Arquivo {
 		/**
 		 * ID do arquivo no banco de dados 
 		 * Caso o arquivo exista seu id será diferente de NULO
@@ -41,7 +41,6 @@
 		private $tiposPermitidos = array("mp4", "mp3", "wma", "aac", "ogc", "ac3", "wav", "avi", "mpeg", "mov", "rmvb", "mkv", "bmp", "gif", "jpeg", "jpg", "png", "zip", "rar", "7z", "txt", "pdf");
 
 		function __construct($tipoArquivo = null) {
-			parent::__construct();
 			if(!is_null($tipoArquivo)) {
 	    		TratamentoErros::validaInteiro($tipoArquivo, "tipo do arquivo");
 				if($tipoArquivo == TIPO_ARQUIVO_FOTO_PERFIL) {
